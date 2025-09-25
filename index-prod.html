@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Test your typing speed and accuracy with our interactive typing test. Choose from Easy, Medium, or Hard difficulty levels. Features real-time statistics.">
+    <meta name="keywords" content="typing test, typing speed, WPM, accuracy, keyboard, practice, typing game">
+    <meta name="author" content="Typing Test App">
+    <meta property="og:title" content="Typing Test - Speed & Accuracy">
+    <meta property="og:description" content="Test your typing speed and accuracy with our interactive typing test. Choose from Easy, Medium, or Hard difficulty levels.">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>Typing Test - Speed & Accuracy</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⌨️</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <style>
+        .typing-text {
+            font-family: 'Courier New', monospace;
+        }
+        .correct {
+            background-color: #10b981;
+            color: white;
+        }
+        .incorrect {
+            background-color: #ef4444;
+            color: white;
+        }
+        .current {
+            background-color: #3b82f6;
+            color: white;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div id="app" class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-keyboard text-blue-600"></i>
+                Typing Test
+            </h1>
+            <p class="text-gray-600">Test your typing speed and accuracy</p>
+        </header>
+
+        <!-- Difficulty Selector -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">Choose Difficulty Level</h2>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button 
+                    @click="selectDifficulty('easy')" 
+                    :class="['px-6 py-3 rounded-lg font-semibold transition-all duration-200', 
+                            selectedDifficulty === 'easy' ? 'bg-green-600 text-white shadow-lg' : 'bg-green-100 text-green-700 hover:bg-green-200']">
+                    <i class="fas fa-leaf mr-2"></i>
+                    Easy
+                </button>
+                <button 
+                    @click="selectDifficulty('medium')" 
+                    :class="['px-6 py-3 rounded-lg font-semibold transition-all duration-200', 
+                            selectedDifficulty === 'medium' ? 'bg-yellow-600 text-white shadow-lg' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200']">
+                    <i class="fas fa-fire mr-2"></i>
+                    Medium
+                </button>
+                <button 
+                    @click="selectDifficulty('hard')" 
+                    :class="['px-6 py-3 rounded-lg font-semibold transition-all duration-200', 
+                            selectedDifficulty === 'hard' ? 'bg-red-600 text-white shadow-lg' : 'bg-red-100 text-red-700 hover:bg-red-200']">
+                    <i class="fas fa-bolt mr-2"></i>
+                    Hard
+                </button>
+            </div>
+            <div class="mt-4 text-center">
+                <span class="text-sm text-gray-600">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    {{ getDifficultyDescription() }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Stats Display -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-center">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-blue-600">{{ wpm }}</div>
+                    <div class="text-sm text-gray-600">WPM</div>
+                </div>
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-green-600">{{ accuracy }}%</div>
+                    <div class="text-sm text-gray-600">Accuracy</div>
+                </div>
+                <div class="bg-purple-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-purple-600">{{ timeLeft }}</div>
+                    <div class="text-sm text-gray-600">Time Left</div>
+                </div>
+                <div class="bg-orange-50 p-4 rounded-lg">
+                    <div class="text-2xl font-bold text-orange-600">{{ charactersTyped }}</div>
+                    <div class="text-sm text-gray-600">Characters</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <!-- Test Text Display -->
+            <div class="mb-6">
+                <div class="typing-text text-lg leading-relaxed p-4 bg-gray-50 rounded-lg border-2 border-gray-200 min-h-[120px]">
+                    <span v-for="(char, index) in textArray" :key="index" 
+                          :class="getCharClass(index)">
+                        {{ char }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Input Area -->
+            <div class="mb-6">
+                <textarea 
+                    v-model="userInput" 
+                    @input="handleInput"
+                    @keydown="handleKeyDown"
+                    :disabled="!testStarted || testFinished"
+                    placeholder="Start typing here..."
+                    class="w-full p-4 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
+                    rows="3">
+                </textarea>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button 
+                    @click="startTest" 
+                    v-if="!testStarted"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-play mr-2"></i>
+                    Start Test
+                </button>
+                
+                <button 
+                    @click="resetTest" 
+                    v-if="testStarted || testFinished"
+                    class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-redo mr-2"></i>
+                    Reset Test
+                </button>
+
+                <button 
+                    @click="changeText" 
+                    class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-sync mr-2"></i>
+                    New {{ selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1) }} Text
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Modal -->
+        <div v-if="testFinished" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+                <h2 class="text-2xl font-bold text-center mb-2 text-gray-800">
+                    <i class="fas fa-trophy text-yellow-500"></i>
+                    Test Complete!
+                </h2>
+                <p class="text-center text-gray-600 mb-6">
+                    <span :class="['px-3 py-1 rounded-full text-sm font-semibold', 
+                                selectedDifficulty === 'easy' ? 'bg-green-100 text-green-700' :
+                                selectedDifficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-red-100 text-red-700']">
+                        {{ selectedDifficulty.charAt(0).toUpperCase() + selectedDifficulty.slice(1) }} Level
+                    </span>
+                </p>
+                
+                <div class="space-y-4 mb-6">
+                    <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                        <span class="font-semibold">Words Per Minute:</span>
+                        <span class="text-xl font-bold text-blue-600">{{ finalWpm }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                        <span class="font-semibold">Accuracy:</span>
+                        <span class="text-xl font-bold text-green-600">{{ finalAccuracy }}%</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                        <span class="font-semibold">Characters Typed:</span>
+                        <span class="text-xl font-bold text-purple-600">{{ finalCharacters }}</span>
+                    </div>
+                    <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
+                        <span class="font-semibold">Errors:</span>
+                        <span class="text-xl font-bold text-orange-600">{{ errors }}</span>
+                    </div>
+                </div>
+
+                <div class="text-center">
+                    <div class="flex items-center justify-center mb-4">
+                        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-3"></div>
+                        <span class="text-gray-600 font-semibold">Redirecting to detailed results...</span>
+                    </div>
+                    <p class="text-sm text-gray-500">You will be automatically redirected to see your detailed performance analysis</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 mt-8">
+            <p>Practice makes perfect! Keep typing to improve your speed and accuracy.</p>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    // Test texts organized by difficulty
+                    texts: {
+                        easy: [
+                            "The cat sat on the mat. It was a sunny day. The bird flew high in the sky. I like to read books. My dog is very friendly. We play games together. The sun shines bright. I love my family. Good morning everyone. Have a nice day.",
+                            "Hello world! This is easy text. I can type fast. The quick fox runs. Jump over the log. Red car drives by. Blue sky above us. Green grass grows tall. Yellow sun shines bright. Black cat walks slowly.",
+                            "One two three four five. Six seven eight nine ten. I can count to ten. The dog barks loud. The cat meows softly. Birds sing sweet songs. Flowers bloom in spring. Trees grow very tall. Water flows in rivers. Fish swim in oceans.",
+                            "My name is John. I am ten years old. I live in a big house. I have a pet dog. His name is Max. We play together every day. I love to read books. My favorite color is blue. I like to eat pizza. School is fun for me.",
+                            "The sky is blue today. Clouds are white and fluffy. The wind blows gently. Birds fly in the sky. Trees sway in the breeze. Flowers bloom in gardens. Children play outside. Families have picnics. Everyone is happy. Life is beautiful.",
+                            "I wake up early every morning. The alarm clock rings at seven. I brush my teeth and wash my face. Then I eat breakfast with my family. My mom makes delicious pancakes. I drink orange juice and eat toast. After breakfast, I get dressed for school.",
+                            "The park is a wonderful place to visit. There are many trees and flowers. Children play on the swings and slides. Families have picnics on the grass. Dogs run around and play fetch. The sun shines through the leaves. It is peaceful and quiet here.",
+                            "My favorite season is summer. The weather is warm and sunny. I can go swimming in the pool. We have ice cream and cold drinks. The days are long and bright. I play outside with my friends. Summer vacation is the best time of year.",
+                            "Cooking is a fun activity to learn. You need fresh ingredients and good recipes. Start with simple dishes like pasta or soup. Follow the instructions carefully. Use the right amount of salt and pepper. Taste your food as you cook. Practice makes perfect in the kitchen.",
+                            "Reading books is very important for learning. Books teach us new things every day. They take us to different places and times. We can learn about history and science. Stories help us understand people better. Libraries have thousands of books to choose from.",
+                            "Exercise is good for your health. You should walk or run every day. Playing sports helps you stay strong. Swimming is great for your muscles. Yoga helps you relax and stretch. Find an activity you enjoy doing. Being active makes you feel happy and energetic.",
+                            "Music makes life more beautiful. People listen to songs every day. Some people play instruments like piano or guitar. Singing brings joy to many hearts. Different cultures have unique musical styles. Concerts are fun events to attend. Music connects people from all over the world.",
+                            "Friends are very important in life. Good friends help you when you need them. They listen to your problems and give advice. You can share your secrets with them. Friends make you laugh and have fun. They support you in good times and bad. True friendship lasts forever.",
+                            "The ocean is vast and mysterious. Waves crash against the shore every day. Fish swim in the deep blue water. Dolphins jump and play in the waves. The beach is covered with soft sand. People build sandcastles and collect shells. The sunset over the ocean is breathtaking.",
+                            "Learning a new language is exciting. You can talk to people from other countries. Start with basic words and phrases. Practice speaking every day. Watch movies in that language. Read books and listen to music. Travel to places where they speak that language.",
+                            "Gardening is a relaxing hobby. You plant seeds in the soil. Water them regularly and give them sunlight. Watch your plants grow bigger each day. Flowers bloom in beautiful colors. Vegetables taste better when you grow them yourself. Gardening teaches you patience and care.",
+                            "The library is a quiet place to study. Books are organized on tall shelves. Librarians help you find what you need. You can read magazines and newspapers. There are computers for research. Students come here to do homework. The library is open every day of the week.",
+                            "Pets bring happiness to families. Dogs are loyal and friendly companions. Cats are independent but loving animals. Birds sing beautiful songs in cages. Fish swim peacefully in aquariums. Taking care of pets teaches responsibility. Animals need food, water, and love every day.",
+                            "The mountains are tall and majestic. Snow covers the peaks in winter. Hikers climb the steep trails carefully. The view from the top is amazing. Fresh air fills your lungs. Wildlife lives in the forests below. Mountain climbing is an adventurous sport.",
+                            "Art and creativity are important for the mind. People paint pictures with bright colors. Sculptors shape clay into beautiful forms. Photographers capture special moments. Musicians create melodies and harmonies. Writers tell stories with words. Art helps us express our feelings and ideas."
+                        ],
+                        medium: [
+                            "The quick brown fox jumps over the lazy dog. This is a classic typing test sentence that contains every letter of the alphabet. Practice makes perfect when it comes to typing speed and accuracy. Consistency is key to improvement.",
+                            "Programming is the art of telling a computer what to do through a series of instructions. It requires logical thinking, problem-solving skills, and attention to detail. Every programmer starts somewhere and learns through practice.",
+                            "Technology has revolutionized the way we communicate, work, and live our daily lives. From smartphones to artificial intelligence, we are constantly surrounded by innovative solutions that make our lives easier and more efficient.",
+                            "Learning a new skill takes time, patience, and consistent practice. Whether it's playing an instrument, learning a language, or mastering a sport, dedication and perseverance are key to success and personal growth.",
+                            "The internet has connected people from all corners of the world, enabling instant communication and information sharing. Social media platforms have transformed how we interact with friends, family, and colleagues on a daily basis.",
+                            "Climate change represents one of the most pressing challenges of our time, requiring immediate action from governments, businesses, and individuals worldwide. Rising global temperatures, melting ice caps, and extreme weather events serve as clear indicators of the urgent need for environmental protection and sustainable practices.",
+                            "The human brain is an incredibly complex organ that continues to fascinate scientists and researchers. With billions of neurons forming intricate networks, it processes information, stores memories, and controls every aspect of our physical and mental functions.",
+                            "Space exploration has captured humanity's imagination for centuries, driving us to push the boundaries of what is possible. From the first moon landing to the exploration of Mars, these achievements represent the pinnacle of human ingenuity and determination.",
+                            "The digital revolution has transformed every aspect of modern society, from how we work and learn to how we shop and socialize. This technological advancement has created new opportunities while also presenting unique challenges that we must navigate carefully.",
+                            "Education is the foundation upon which societies build their future, providing individuals with the knowledge, skills, and critical thinking abilities necessary to contribute meaningfully to their communities and the world at large.",
+                            "The global economy operates as an interconnected system where events in one region can have far-reaching consequences across the world. Understanding these complex relationships is essential for making informed decisions in business and policy.",
+                            "Mental health awareness has gained significant attention in recent years, recognizing the importance of emotional well-being alongside physical health. This shift in perspective has led to better support systems and reduced stigma surrounding mental health issues.",
+                            "Renewable energy sources such as solar, wind, and hydroelectric power offer promising alternatives to fossil fuels, providing cleaner options for meeting our growing energy demands while reducing environmental impact.",
+                            "The concept of work-life balance has become increasingly important as technology blurs the boundaries between professional and personal time. Finding equilibrium between career ambitions and personal well-being is crucial for long-term happiness and success.",
+                            "Cultural diversity enriches our communities by bringing together different perspectives, traditions, and ways of thinking. This variety fosters creativity, innovation, and mutual understanding among people from various backgrounds.",
+                            "The healthcare industry continues to evolve with advances in medical technology, personalized treatments, and preventive care approaches. These developments promise to improve patient outcomes and make healthcare more accessible to people worldwide.",
+                            "Urban planning plays a crucial role in creating sustainable cities that can accommodate growing populations while maintaining quality of life. Smart city initiatives integrate technology to improve efficiency, reduce waste, and enhance citizen services.",
+                            "The entertainment industry has undergone dramatic changes with the rise of streaming platforms, social media, and digital content creation. These shifts have democratized content production while creating new challenges for traditional media companies.",
+                            "Scientific research drives human progress by expanding our understanding of the natural world and developing solutions to complex problems. Collaboration between researchers, institutions, and countries accelerates the pace of discovery and innovation.",
+                            "The concept of sustainability encompasses environmental, economic, and social dimensions, requiring a holistic approach to ensure that current actions do not compromise the ability of future generations to meet their own needs."
+                        ],
+                        hard: [
+                            "The juxtaposition of quantum mechanics and classical physics presents an intriguing paradox that continues to challenge our understanding of the fundamental nature of reality. Theoretical physicists have been grappling with this conundrum for decades, developing increasingly sophisticated mathematical frameworks to reconcile these seemingly incompatible worldviews.",
+                            "Cryptocurrency and blockchain technology represent a paradigm shift in how we conceptualize digital transactions and decentralized systems. The cryptographic algorithms underlying these technologies ensure security and immutability while enabling peer-to-peer interactions without traditional intermediaries.",
+                            "The philosophical implications of artificial intelligence extend far beyond mere computational capabilities, touching upon questions of consciousness, free will, and the nature of human existence. As machine learning algorithms become increasingly sophisticated, we must grapple with the ethical dimensions of creating systems that may eventually surpass human cognitive abilities.",
+                            "Neuroscience research has revealed the remarkable plasticity of the human brain, demonstrating that neural pathways can be rewired throughout our lives through deliberate practice and environmental stimulation. This neuroplasticity has profound implications for education, rehabilitation, and personal development strategies.",
+                            "The interdisciplinary nature of modern scientific research requires collaboration between experts from diverse fields, including biology, chemistry, physics, mathematics, and computer science. This convergence of knowledge has led to groundbreaking discoveries in areas such as biotechnology, nanotechnology, and quantum computing.",
+                            "The epistemological foundations of contemporary knowledge systems rest upon the intricate interplay between empirical observation, theoretical modeling, and methodological rigor. Philosophers of science continue to debate the nature of truth, the limits of human understanding, and the criteria for establishing reliable knowledge claims in an increasingly complex and interconnected world.",
+                            "Metamorphic processes in geological formations demonstrate the dynamic nature of Earth's crust, where intense pressure and temperature conditions transform existing rock structures into entirely new mineral compositions. These geological transformations occur over millions of years, providing valuable insights into planetary evolution and the formation of natural resources.",
+                            "The thermodynamic principles governing energy transfer in biological systems reveal the elegant efficiency of cellular processes, where complex biochemical reactions maintain homeostasis through intricate feedback mechanisms. Understanding these fundamental processes is crucial for advancing medical treatments and developing sustainable biotechnological solutions.",
+                            "The sociolinguistic implications of digital communication platforms have fundamentally altered the way humans construct meaning, establish social hierarchies, and maintain interpersonal relationships. These technological innovations have created new forms of linguistic expression while simultaneously challenging traditional notions of authenticity and identity in virtual spaces.",
+                            "The mathematical foundations of machine learning algorithms rely heavily on linear algebra, calculus, and statistical theory to optimize complex functions and minimize prediction errors. These computational approaches enable systems to identify patterns in vast datasets, but they also raise important questions about bias, interpretability, and the ethical implications of automated decision-making processes.",
+                            "The cosmological implications of dark matter and dark energy continue to perplex astrophysicists, as these mysterious components appear to constitute the majority of the universe's mass-energy content. Current observational techniques and theoretical models struggle to provide definitive explanations for these phenomena, highlighting the limitations of our current understanding of fundamental physics.",
+                            "The pharmacological mechanisms underlying drug interactions involve complex biochemical pathways that can produce synergistic, antagonistic, or unexpected therapeutic effects. Understanding these intricate relationships is essential for developing safe and effective treatment protocols, particularly in cases involving multiple medications or patients with complex medical histories.",
+                            "The architectural principles of sustainable design integrate environmental considerations with aesthetic and functional requirements, creating buildings that minimize ecological impact while maximizing occupant comfort and energy efficiency. These approaches require careful consideration of local climate conditions, material selection, and long-term maintenance strategies.",
+                            "The psychological mechanisms underlying cognitive biases reveal the systematic ways in which human reasoning deviates from purely rational decision-making processes. These mental shortcuts, while often adaptive in evolutionary terms, can lead to significant errors in judgment, particularly in complex situations requiring careful analysis and critical thinking.",
+                            "The economic implications of globalization have created intricate networks of international trade, capital flows, and labor mobility that transcend traditional national boundaries. These interconnected systems have generated unprecedented prosperity for many while simultaneously creating new forms of inequality and vulnerability that challenge conventional policy frameworks.",
+                            "The molecular mechanisms of gene expression regulation involve complex interactions between transcription factors, chromatin remodeling complexes, and epigenetic modifications that determine when and how genetic information is translated into functional proteins. Understanding these processes is crucial for developing targeted therapies for genetic diseases and cancer treatment.",
+                            "The philosophical foundations of ethics in artificial intelligence require careful consideration of moral agency, responsibility, and the potential for machines to make decisions that affect human welfare. These questions become increasingly urgent as AI systems become more autonomous and are deployed in critical applications such as healthcare, transportation, and criminal justice.",
+                            "The ecological principles governing ecosystem stability involve complex feedback loops between species interactions, nutrient cycling, and environmental factors that maintain biodiversity and functional integrity. Human activities that disrupt these delicate balances can have cascading effects that extend far beyond immediate environmental impacts.",
+                            "The computational complexity of optimization problems in computer science often requires sophisticated algorithmic approaches, including approximation methods, heuristic techniques, and parallel processing strategies. These challenges become particularly acute when dealing with large-scale systems where exact solutions are computationally intractable.",
+                            "The anthropological perspectives on cultural evolution reveal the complex interplay between biological inheritance, social learning, and environmental adaptation that has shaped human societies throughout history. Understanding these processes provides valuable insights into contemporary social challenges and the potential for future cultural development."
+                        ]
+                    },
+                    selectedDifficulty: 'medium',
+                    currentText: "",
+                    textArray: [],
+                    userInput: "",
+                    testStarted: false,
+                    testFinished: false,
+                    timeLeft: 60,
+                    timer: null,
+                    charactersTyped: 0,
+                    errors: 0,
+                    correctChars: 0,
+                    startTime: null
+                }
+            },
+            computed: {
+                wpm() {
+                    if (!this.testStarted || this.charactersTyped === 0) return 0;
+                    const minutes = (60 - this.timeLeft) / 60;
+                    return Math.round((this.charactersTyped / 5) / minutes);
+                },
+                accuracy() {
+                    if (this.charactersTyped === 0) return 100;
+                    return Math.round((this.correctChars / this.charactersTyped) * 100);
+                },
+                finalWpm() {
+                    return this.wpm;
+                },
+                finalAccuracy() {
+                    return this.accuracy;
+                },
+                finalCharacters() {
+                    return this.charactersTyped;
+                }
+            },
+            methods: {
+                selectDifficulty(level) {
+                    this.selectedDifficulty = level;
+                    this.generateRandomText();
+                    this.resetTest();
+                },
+                getDifficultyDescription() {
+                    const descriptions = {
+                        easy: "Simple words, short sentences, common vocabulary",
+                        medium: "Mixed complexity, moderate sentence length, varied vocabulary",
+                        hard: "Complex words, long sentences, technical and academic vocabulary"
+                    };
+                    return descriptions[this.selectedDifficulty];
+                },
+                generateRandomText() {
+                    const difficultyTexts = this.texts[this.selectedDifficulty];
+                    const randomIndex = Math.floor(Math.random() * difficultyTexts.length);
+                    this.currentText = difficultyTexts[randomIndex];
+                    this.textArray = this.currentText.split('');
+                },
+                startTest() {
+                    this.testStarted = true;
+                    this.testFinished = false;
+                    this.userInput = "";
+                    this.charactersTyped = 0;
+                    this.errors = 0;
+                    this.correctChars = 0;
+                    this.timeLeft = 60;
+                    this.startTime = Date.now();
+                    
+                    this.timer = setInterval(() => {
+                        this.timeLeft--;
+                        if (this.timeLeft <= 0) {
+                            this.finishTest();
+                        }
+                    }, 1000);
+                },
+                handleInput() {
+                    if (!this.testStarted) return;
+                    
+                    const inputLength = this.userInput.length;
+                    this.charactersTyped = inputLength;
+                    
+                    // Count correct and incorrect characters
+                    let correct = 0;
+                    let incorrect = 0;
+                    
+                    for (let i = 0; i < inputLength; i++) {
+                        if (this.userInput[i] === this.currentText[i]) {
+                            correct++;
+                        } else {
+                            incorrect++;
+                        }
+                    }
+                    
+                    this.correctChars = correct;
+                    this.errors = incorrect;
+                    
+                    // Check if test is complete
+                    if (inputLength >= this.currentText.length) {
+                        this.finishTest();
+                    }
+                },
+                handleKeyDown(event) {
+                    if (event.key === 'Backspace' && this.userInput.length > 0) {
+                        // Allow backspace
+                        return;
+                    }
+                    
+                    // Prevent other special keys
+                    if (event.key.length > 1 && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+                        event.preventDefault();
+                    }
+                },
+                finishTest() {
+                    this.testFinished = true;
+                    this.testStarted = false;
+                    clearInterval(this.timer);
+                    
+                    // Save results and redirect to results page
+                    const results = {
+                        wpm: this.wpm,
+                        accuracy: this.accuracy,
+                        characters: this.charactersTyped,
+                        correctChars: this.correctChars,
+                        errors: this.errors,
+                        timeUsed: 60 - this.timeLeft,
+                        difficulty: this.selectedDifficulty
+                    };
+                    
+                    localStorage.setItem('typingResults', JSON.stringify(results));
+                    
+                    // Redirect to results page after a short delay
+                    setTimeout(() => {
+                        window.location.href = `results.html?wpm=${results.wpm}&accuracy=${results.accuracy}&characters=${results.characters}&correctChars=${results.correctChars}&errors=${results.errors}&timeUsed=${results.timeUsed}&difficulty=${results.difficulty}`;
+                    }, 2000);
+                },
+                resetTest() {
+                    this.testStarted = false;
+                    this.testFinished = false;
+                    this.userInput = "";
+                    this.charactersTyped = 0;
+                    this.errors = 0;
+                    this.correctChars = 0;
+                    this.timeLeft = 60;
+                    clearInterval(this.timer);
+                },
+                changeText() {
+                    this.generateRandomText();
+                    this.resetTest();
+                },
+                getCharClass(index) {
+                    if (index < this.userInput.length) {
+                        if (this.userInput[index] === this.currentText[index]) {
+                            return 'correct';
+                        } else {
+                            return 'incorrect';
+                        }
+                    } else if (index === this.userInput.length && this.testStarted) {
+                        return 'current';
+                    }
+                    return '';
+                }
+            },
+            mounted() {
+                this.generateRandomText();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

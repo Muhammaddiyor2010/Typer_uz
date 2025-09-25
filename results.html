@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Typing Test Results - View your detailed typing performance and statistics">
+    <title>Typing Test Results</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⌨️</text></svg>">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .result-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        .performance-excellent { color: #10b981; }
+        .performance-good { color: #3b82f6; }
+        .performance-average { color: #f59e0b; }
+        .performance-poor { color: #ef4444; }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen">
+    <div id="app" class="container mx-auto px-4 py-8">
+        <!-- Language Selector -->
+        <div class="fixed top-4 right-4 z-50">
+            <select v-model="selectedLanguage" @change="changeLanguage" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium shadow-lg">
+                <option value="en">🇺🇸 English</option>
+                <option value="ru">🇷🇺 Русский</option>
+                <option value="uz">🇺🇿 O'zbek</option>
+            </select>
+        </div>
+
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                <i class="fas fa-trophy text-yellow-400"></i>
+                {{ translations.title }}
+            </h1>
+            <p class="text-white opacity-90">{{ translations.subtitle }}</p>
+        </header>
+
+        <!-- Main Results Card -->
+        <div class="result-card rounded-2xl shadow-2xl p-8 mb-8">
+            <!-- Performance Summary -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-24 h-24 rounded-full mb-4" :class="getPerformanceColor()">
+                    <i :class="getPerformanceIcon()" class="text-4xl text-white"></i>
+                </div>
+                <h2 class="text-3xl font-bold mb-2" :class="getPerformanceTextColor()">
+                    {{ getPerformanceTitle() }}
+                </h2>
+                <p class="text-gray-600 text-lg">{{ getPerformanceDescription() }}</p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-blue-50 p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-blue-600 mb-2">{{ results.wpm }}</div>
+                    <div class="text-sm text-gray-600 mb-1">{{ translations.wordsPerMinute }}</div>
+                    <div class="text-xs text-gray-500">{{ getWpmRating() }}</div>
+                </div>
+                <div class="bg-green-50 p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-green-600 mb-2">{{ results.accuracy }}%</div>
+                    <div class="text-sm text-gray-600 mb-1">{{ translations.accuracy }}</div>
+                    <div class="text-xs text-gray-500">{{ getAccuracyRating() }}</div>
+                </div>
+                <div class="bg-purple-50 p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-purple-600 mb-2">{{ results.characters }}</div>
+                    <div class="text-sm text-gray-600 mb-1">{{ translations.charactersTyped }}</div>
+                    <div class="text-xs text-gray-500">{{ results.correctChars }} {{ translations.correct }}</div>
+                </div>
+                <div class="bg-orange-50 p-6 rounded-xl text-center">
+                    <div class="text-3xl font-bold text-orange-600 mb-2">{{ results.errors }}</div>
+                    <div class="text-sm text-gray-600 mb-1">{{ translations.errors }}</div>
+                    <div class="text-xs text-gray-500">{{ getErrorRating() }}</div>
+                </div>
+            </div>
+
+            <!-- Detailed Analysis -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Performance Breakdown -->
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-chart-bar text-blue-600 mr-2"></i>
+                        {{ translations.performanceBreakdown }}
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{{ translations.typingSpeed }}</span>
+                            <span class="font-semibold" :class="getWpmColor()">{{ results.wpm }} {{ translations.wpm }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{{ translations.accuracyRate }}</span>
+                            <span class="font-semibold" :class="getAccuracyColor()">{{ results.accuracy }}%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{{ translations.errorRate }}</span>
+                            <span class="font-semibold" :class="getErrorColor()">{{ getErrorRate() }}%</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{{ translations.timeTaken }}</span>
+                            <span class="font-semibold text-gray-800">{{ results.timeUsed }}s</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{{ translations.difficultyLevel }}</span>
+                            <span class="font-semibold px-3 py-1 rounded-full text-sm" :class="getDifficultyColor()">
+                                {{ getDifficultyTranslation() }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tips and Recommendations -->
+                <div class="bg-gray-50 p-6 rounded-xl">
+                    <h3 class="text-xl font-semibold mb-4 text-gray-800">
+                        <i class="fas fa-lightbulb text-yellow-500 mr-2"></i>
+                        {{ translations.tipsRecommendations }}
+                    </h3>
+                    <div class="space-y-3">
+                        <div v-for="tip in getTips()" :key="tip" class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3 flex-shrink-0"></i>
+                            <span class="text-gray-700 text-sm">{{ tip }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button @click="shareResults" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                    <i class="fas fa-share mr-2"></i>
+                    {{ translations.shareResults }}
+                </button>
+                <button @click="downloadResults" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                    <i class="fas fa-download mr-2"></i>
+                    {{ translations.downloadReport }}
+                </button>
+                <button @click="takeAnotherTest" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                    <i class="fas fa-redo mr-2"></i>
+                    {{ translations.takeAnotherTest }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Comparison Chart -->
+        <div class="result-card rounded-2xl shadow-2xl p-8 mb-8">
+            <h3 class="text-2xl font-bold text-center mb-6 text-gray-800">
+                <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                {{ translations.performanceComparison }}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-600 mb-2">{{ translations.beginner }}</div>
+                    <div class="text-4xl font-bold text-gray-400 mb-2">0-20 {{ translations.wpm }}</div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-gray-400 h-3 rounded-full" :style="{width: Math.min((results.wpm / 20) * 100, 100) + '%'}"></div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-600 mb-2">{{ translations.intermediate }}</div>
+                    <div class="text-4xl font-bold text-gray-400 mb-2">21-40 {{ translations.wpm }}</div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-blue-500 h-3 rounded-full" :style="{width: Math.min(Math.max((results.wpm - 20) / 20, 0) * 100, 100) + '%'}"></div>
+                    </div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-600 mb-2">{{ translations.advanced }}</div>
+                    <div class="text-4xl font-bold text-gray-400 mb-2">40+ {{ translations.wpm }}</div>
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div class="bg-green-500 h-3 rounded-full" :style="{width: Math.min(Math.max((results.wpm - 40) / 20, 0) * 100, 100) + '%'}"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center text-white opacity-75">
+            <p>{{ translations.footerMessage }}</p>
+            <div class="mt-4 pt-4 border-t border-white border-opacity-30">
+                <p class="text-sm text-white opacity-75">
+                    <i class="fas fa-code mr-1"></i>
+                    {{ translations.createdBy }} 
+                    <span class="font-semibold text-yellow-300">Muhammaddiyorjon</span>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    selectedLanguage: localStorage.getItem('selectedLanguage') || 'en',
+                    translations: this.getTranslations(localStorage.getItem('selectedLanguage') || 'en'),
+                    results: {
+                        wpm: 0,
+                        accuracy: 0,
+                        characters: 0,
+                        correctChars: 0,
+                        errors: 0,
+                        timeUsed: 0,
+                        difficulty: 'medium'
+                    }
+                }
+            },
+            mounted() {
+                // Load saved language preference
+                const savedLanguage = localStorage.getItem('selectedLanguage');
+                if (savedLanguage && ['en', 'ru', 'uz'].includes(savedLanguage)) {
+                    this.selectedLanguage = savedLanguage;
+                    this.translations = this.getTranslations(savedLanguage);
+                }
+                this.loadResults();
+            },
+            methods: {
+                getTranslations(language) {
+                    const translations = {
+                        en: {
+                            title: "Typing Test Results",
+                            subtitle: "Your detailed performance analysis",
+                            wordsPerMinute: "Words Per Minute",
+                            accuracy: "Accuracy",
+                            charactersTyped: "Characters Typed",
+                            errors: "Errors",
+                            correct: "correct",
+                            performanceBreakdown: "Performance Breakdown",
+                            typingSpeed: "Typing Speed",
+                            wpm: "WPM",
+                            accuracyRate: "Accuracy Rate",
+                            errorRate: "Error Rate",
+                            timeTaken: "Time Taken",
+                            difficultyLevel: "Difficulty Level",
+                            tipsRecommendations: "Tips & Recommendations",
+                            shareResults: "Share Results",
+                            downloadReport: "Download Report",
+                            takeAnotherTest: "Take Another Test",
+                            performanceComparison: "Performance Comparison",
+                            beginner: "Beginner",
+                            intermediate: "Intermediate",
+                            advanced: "Advanced",
+                            footerMessage: "Keep practicing to improve your typing skills!",
+                            createdBy: "Created and supported by"
+                        },
+                        ru: {
+                            title: "Результаты Теста Печати",
+                            subtitle: "Ваш детальный анализ производительности",
+                            wordsPerMinute: "Слов в минуту",
+                            accuracy: "Точность",
+                            charactersTyped: "Напечатано символов",
+                            errors: "Ошибки",
+                            correct: "правильно",
+                            performanceBreakdown: "Анализ Производительности",
+                            typingSpeed: "Скорость Печати",
+                            wpm: "ЗМ/М",
+                            accuracyRate: "Точность",
+                            errorRate: "Процент Ошибок",
+                            timeTaken: "Затраченное Время",
+                            difficultyLevel: "Уровень Сложности",
+                            tipsRecommendations: "Советы и Рекомендации",
+                            shareResults: "Поделиться Результатами",
+                            downloadReport: "Скачать Отчет",
+                            takeAnotherTest: "Пройти Еще Один Тест",
+                            performanceComparison: "Сравнение Производительности",
+                            beginner: "Начинающий",
+                            intermediate: "Средний",
+                            advanced: "Продвинутый",
+                            footerMessage: "Продолжайте практиковаться, чтобы улучшить навыки печати!",
+                            createdBy: "Создано и поддерживается"
+                        },
+                        uz: {
+                            title: "Yozish Testi Natijalari",
+                            subtitle: "Batafsil ishlash tahlilingiz",
+                            wordsPerMinute: "Daqiqada So'z",
+                            accuracy: "Aniqlik",
+                            charactersTyped: "Yozilgan Belgilar",
+                            errors: "Xatolar",
+                            correct: "to'g'ri",
+                            performanceBreakdown: "Ishlash Tahlili",
+                            typingSpeed: "Yozish Tezligi",
+                            wpm: "S/M",
+                            accuracyRate: "Aniqlik Darajasi",
+                            errorRate: "Xato Foizi",
+                            timeTaken: "Sarflangan Vaqt",
+                            difficultyLevel: "Qiyinlik Darajasi",
+                            tipsRecommendations: "Maslahat va Tavsiyalar",
+                            shareResults: "Natijalarni Ulashish",
+                            downloadReport: "Hisobotni Yuklab Olish",
+                            takeAnotherTest: "Yana Bir Test O'tish",
+                            performanceComparison: "Ishlash Taqqoslash",
+                            beginner: "Boshlang'ich",
+                            intermediate: "O'rta",
+                            advanced: "Yuqori",
+                            footerMessage: "Yozish ko'nikmalarini yaxshilash uchun mashq qilishni davom eting!",
+                            createdBy: "Yaratilgan va qo'llab-quvvatlanadi"
+                        }
+                    };
+                    return translations[language] || translations.en;
+                },
+                changeLanguage() {
+                    this.translations = this.getTranslations(this.selectedLanguage);
+                    // Save language preference to localStorage
+                    localStorage.setItem('selectedLanguage', this.selectedLanguage);
+                },
+                getDifficultyTranslation() {
+                    const difficultyTranslations = {
+                        en: { easy: "Easy", medium: "Medium", hard: "Hard" },
+                        ru: { easy: "Легкий", medium: "Средний", hard: "Сложный" },
+                        uz: { easy: "Oson", medium: "O'rta", hard: "Qiyin" }
+                    };
+                    return difficultyTranslations[this.selectedLanguage][this.results.difficulty];
+                },
+                loadResults() {
+                    // Get results from URL parameters or localStorage
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const storedResults = localStorage.getItem('typingResults');
+                    
+                    if (urlParams.has('wpm')) {
+                        this.results = {
+                            wpm: parseInt(urlParams.get('wpm')),
+                            accuracy: parseInt(urlParams.get('accuracy')),
+                            characters: parseInt(urlParams.get('characters')),
+                            correctChars: parseInt(urlParams.get('correctChars')),
+                            errors: parseInt(urlParams.get('errors')),
+                            timeUsed: parseInt(urlParams.get('timeUsed')),
+                            difficulty: urlParams.get('difficulty') || 'medium'
+                        };
+                    } else if (storedResults) {
+                        this.results = JSON.parse(storedResults);
+                    } else {
+                        // Default results if none found
+                        this.results = {
+                            wpm: 25,
+                            accuracy: 85,
+                            characters: 150,
+                            correctChars: 128,
+                            errors: 22,
+                            timeUsed: 60,
+                            difficulty: 'medium'
+                        };
+                    }
+                },
+                getPerformanceTitle() {
+                    const titles = {
+                        en: {
+                            excellent: 'Excellent!',
+                            veryGood: 'Very Good!',
+                            good: 'Good!',
+                            fair: 'Fair',
+                            keepPracticing: 'Keep Practicing!'
+                        },
+                        ru: {
+                            excellent: 'Отлично!',
+                            veryGood: 'Очень Хорошо!',
+                            good: 'Хорошо!',
+                            fair: 'Неплохо',
+                            keepPracticing: 'Продолжайте Практиковаться!'
+                        },
+                        uz: {
+                            excellent: 'Ajoyib!',
+                            veryGood: 'Juda Yaxshi!',
+                            good: 'Yaxshi!',
+                            fair: 'Yaxshi',
+                            keepPracticing: 'Mashq Qilishni Davom Eting!'
+                        }
+                    };
+                    
+                    if (this.results.wpm >= 50 && this.results.accuracy >= 95) return titles[this.selectedLanguage].excellent;
+                    if (this.results.wpm >= 35 && this.results.accuracy >= 90) return titles[this.selectedLanguage].veryGood;
+                    if (this.results.wpm >= 25 && this.results.accuracy >= 85) return titles[this.selectedLanguage].good;
+                    if (this.results.wpm >= 15 && this.results.accuracy >= 80) return titles[this.selectedLanguage].fair;
+                    return titles[this.selectedLanguage].keepPracticing;
+                },
+                getPerformanceDescription() {
+                    const descriptions = {
+                        en: {
+                            excellent: 'Outstanding typing performance! You are among the top typists.',
+                            veryGood: 'Great job! Your typing skills are well above average.',
+                            good: 'Good performance! You have solid typing skills.',
+                            fair: 'Not bad! With more practice, you can improve significantly.',
+                            keepPracticing: 'Don\'t give up! Practice regularly to improve your typing speed and accuracy.'
+                        },
+                        ru: {
+                            excellent: 'Превосходная производительность печати! Вы входите в число лучших машинисток.',
+                            veryGood: 'Отличная работа! Ваши навыки печати значительно выше среднего.',
+                            good: 'Хорошая производительность! У вас солидные навыки печати.',
+                            fair: 'Неплохо! С дополнительной практикой вы можете значительно улучшиться.',
+                            keepPracticing: 'Не сдавайтесь! Регулярно практикуйтесь, чтобы улучшить скорость и точность печати.'
+                        },
+                        uz: {
+                            excellent: 'Ajoyib yozish natijasi! Siz eng yaxshi yozuvchilar qatoridasiz.',
+                            veryGood: 'Ajoyib ish! Sizning yozish ko\'nikmalaringiz o\'rtacha darajadan ancha yuqori.',
+                            good: 'Yaxshi natija! Sizda mustahkam yozish ko\'nikmalari bor.',
+                            fair: 'Yomon emas! Ko\'proq mashq bilan sezilarli yaxshilash mumkin.',
+                            keepPracticing: 'Tushkunlikka tushmang! Yozish tezligi va aniqligini yaxshilash uchun muntazam mashq qiling.'
+                        }
+                    };
+                    
+                    if (this.results.wpm >= 50 && this.results.accuracy >= 95) return descriptions[this.selectedLanguage].excellent;
+                    if (this.results.wpm >= 35 && this.results.accuracy >= 90) return descriptions[this.selectedLanguage].veryGood;
+                    if (this.results.wpm >= 25 && this.results.accuracy >= 85) return descriptions[this.selectedLanguage].good;
+                    if (this.results.wpm >= 15 && this.results.accuracy >= 80) return descriptions[this.selectedLanguage].fair;
+                    return descriptions[this.selectedLanguage].keepPracticing;
+                },
+                getPerformanceColor() {
+                    if (this.results.wpm >= 50 && this.results.accuracy >= 95) return 'bg-green-500';
+                    if (this.results.wpm >= 35 && this.results.accuracy >= 90) return 'bg-blue-500';
+                    if (this.results.wpm >= 25 && this.results.accuracy >= 85) return 'bg-yellow-500';
+                    return 'bg-red-500';
+                },
+                getPerformanceIcon() {
+                    if (this.results.wpm >= 50 && this.results.accuracy >= 95) return 'fas fa-trophy';
+                    if (this.results.wpm >= 35 && this.results.accuracy >= 90) return 'fas fa-medal';
+                    if (this.results.wpm >= 25 && this.results.accuracy >= 85) return 'fas fa-star';
+                    return 'fas fa-thumbs-up';
+                },
+                getPerformanceTextColor() {
+                    if (this.results.wpm >= 50 && this.results.accuracy >= 95) return 'performance-excellent';
+                    if (this.results.wpm >= 35 && this.results.accuracy >= 90) return 'performance-good';
+                    if (this.results.wpm >= 25 && this.results.accuracy >= 85) return 'performance-average';
+                    return 'performance-poor';
+                },
+                getWpmRating() {
+                    const ratings = {
+                        en: {
+                            expert: 'Expert Level',
+                            advanced: 'Advanced',
+                            intermediate: 'Intermediate',
+                            beginner: 'Beginner',
+                            needsPractice: 'Needs Practice'
+                        },
+                        ru: {
+                            expert: 'Экспертный Уровень',
+                            advanced: 'Продвинутый',
+                            intermediate: 'Средний',
+                            beginner: 'Начинающий',
+                            needsPractice: 'Нужна Практика'
+                        },
+                        uz: {
+                            expert: 'Ekspert Darajasi',
+                            advanced: 'Yuqori',
+                            intermediate: 'O\'rta',
+                            beginner: 'Boshlang\'ich',
+                            needsPractice: 'Mashq Kerak'
+                        }
+                    };
+                    
+                    if (this.results.wpm >= 50) return ratings[this.selectedLanguage].expert;
+                    if (this.results.wpm >= 35) return ratings[this.selectedLanguage].advanced;
+                    if (this.results.wpm >= 25) return ratings[this.selectedLanguage].intermediate;
+                    if (this.results.wpm >= 15) return ratings[this.selectedLanguage].beginner;
+                    return ratings[this.selectedLanguage].needsPractice;
+                },
+                getAccuracyRating() {
+                    const ratings = {
+                        en: {
+                            excellent: 'Excellent',
+                            veryGood: 'Very Good',
+                            good: 'Good',
+                            fair: 'Fair',
+                            needsImprovement: 'Needs Improvement'
+                        },
+                        ru: {
+                            excellent: 'Отлично',
+                            veryGood: 'Очень Хорошо',
+                            good: 'Хорошо',
+                            fair: 'Неплохо',
+                            needsImprovement: 'Нужно Улучшение'
+                        },
+                        uz: {
+                            excellent: 'Ajoyib',
+                            veryGood: 'Juda Yaxshi',
+                            good: 'Yaxshi',
+                            fair: 'Yaxshi',
+                            needsImprovement: 'Yaxshilash Kerak'
+                        }
+                    };
+                    
+                    if (this.results.accuracy >= 95) return ratings[this.selectedLanguage].excellent;
+                    if (this.results.accuracy >= 90) return ratings[this.selectedLanguage].veryGood;
+                    if (this.results.accuracy >= 85) return ratings[this.selectedLanguage].good;
+                    if (this.results.accuracy >= 80) return ratings[this.selectedLanguage].fair;
+                    return ratings[this.selectedLanguage].needsImprovement;
+                },
+                getErrorRating() {
+                    const ratings = {
+                        en: {
+                            veryLow: 'Very Low',
+                            low: 'Low',
+                            moderate: 'Moderate',
+                            high: 'High'
+                        },
+                        ru: {
+                            veryLow: 'Очень Низкий',
+                            low: 'Низкий',
+                            moderate: 'Умеренный',
+                            high: 'Высокий'
+                        },
+                        uz: {
+                            veryLow: 'Juda Past',
+                            low: 'Past',
+                            moderate: 'O\'rta',
+                            high: 'Yuqori'
+                        }
+                    };
+                    
+                    if (this.results.errors <= 5) return ratings[this.selectedLanguage].veryLow;
+                    if (this.results.errors <= 10) return ratings[this.selectedLanguage].low;
+                    if (this.results.errors <= 20) return ratings[this.selectedLanguage].moderate;
+                    return ratings[this.selectedLanguage].high;
+                },
+                getWpmColor() {
+                    if (this.results.wpm >= 50) return 'text-green-600';
+                    if (this.results.wpm >= 35) return 'text-blue-600';
+                    if (this.results.wpm >= 25) return 'text-yellow-600';
+                    return 'text-red-600';
+                },
+                getAccuracyColor() {
+                    if (this.results.accuracy >= 95) return 'text-green-600';
+                    if (this.results.accuracy >= 90) return 'text-blue-600';
+                    if (this.results.accuracy >= 85) return 'text-yellow-600';
+                    return 'text-red-600';
+                },
+                getErrorColor() {
+                    if (this.results.errors <= 5) return 'text-green-600';
+                    if (this.results.errors <= 10) return 'text-blue-600';
+                    if (this.results.errors <= 20) return 'text-yellow-600';
+                    return 'text-red-600';
+                },
+                getErrorRate() {
+                    return Math.round((this.results.errors / this.results.characters) * 100);
+                },
+                getDifficultyColor() {
+                    const colors = {
+                        easy: 'bg-green-100 text-green-700',
+                        medium: 'bg-yellow-100 text-yellow-700',
+                        hard: 'bg-red-100 text-red-700'
+                    };
+                    return colors[this.results.difficulty] || colors.medium;
+                },
+                getTips() {
+                    const tips = {
+                        en: {
+                            lowSpeed: ['Practice typing daily to increase your speed', 'Focus on accuracy first, then speed'],
+                            lowAccuracy: ['Slow down slightly to improve accuracy', 'Practice with easier texts to build confidence'],
+                            highErrors: ['Take your time and don\'t rush', 'Use proper finger positioning on the keyboard'],
+                            goodPerformance: ['Great job! Try harder difficulty levels', 'Practice with longer texts to build endurance'],
+                            excellent: ['Excellent performance! Keep up the great work', 'Try challenging yourself with harder texts']
+                        },
+                        ru: {
+                            lowSpeed: ['Практикуйтесь в печати ежедневно, чтобы увеличить скорость', 'Сначала сосредоточьтесь на точности, затем на скорости'],
+                            lowAccuracy: ['Немного замедлитесь, чтобы улучшить точность', 'Практикуйтесь с более легкими текстами для повышения уверенности'],
+                            highErrors: ['Не торопитесь и не спешите', 'Используйте правильное расположение пальцев на клавиатуре'],
+                            goodPerformance: ['Отличная работа! Попробуйте более сложные уровни', 'Практикуйтесь с более длинными текстами для выносливости'],
+                            excellent: ['Превосходная производительность! Продолжайте в том же духе', 'Бросьте себе вызов более сложными текстами']
+                        },
+                        uz: {
+                            lowSpeed: ['Tezlikni oshirish uchun har kuni yozish mashqlarini bajaring', 'Avval aniqlikka, keyin tezlikka e\'tibor qarang'],
+                            lowAccuracy: ['Aniqlikni yaxshilash uchun biroz sekinroq yozing', 'Ishonchni oshirish uchun osonroq matnlar bilan mashq qiling'],
+                            highErrors: ['Vaqtingizni oling va shoshilmaslik', 'Klaviatura ustida to\'g\'ri barmoq joylashuvidan foydalaning'],
+                            goodPerformance: ['Ajoyib ish! Qiyinroq darajalarni sinab ko\'ring', 'Chidamlilikni oshirish uchun uzunroq matnlar bilan mashq qiling'],
+                            excellent: ['Ajoyib natija! Yaxshi ishlashni davom eting', 'O\'zingizni qiyinroq matnlar bilan sinab ko\'ring']
+                        }
+                    };
+                    
+                    const selectedTips = tips[this.selectedLanguage];
+                    const resultTips = [];
+                    
+                    if (this.results.wpm < 25) {
+                        resultTips.push(...selectedTips.lowSpeed);
+                    }
+                    
+                    if (this.results.accuracy < 90) {
+                        resultTips.push(...selectedTips.lowAccuracy);
+                    }
+                    
+                    if (this.results.errors > 15) {
+                        resultTips.push(...selectedTips.highErrors);
+                    }
+                    
+                    if (this.results.wpm >= 35) {
+                        resultTips.push(...selectedTips.goodPerformance);
+                    }
+                    
+                    if (resultTips.length === 0) {
+                        resultTips.push(...selectedTips.excellent);
+                    }
+                    
+                    return resultTips;
+                },
+                shareResults() {
+                    const text = `I just completed a typing test! 🎯\n\n📊 Results:\n• Speed: ${this.results.wpm} WPM\n• Accuracy: ${this.results.accuracy}%\n• Difficulty: ${this.results.difficulty.toUpperCase()}\n\n${this.getPerformanceTitle()} ${this.getPerformanceDescription()}\n\nTry it yourself!`;
+                    
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'My Typing Test Results',
+                            text: text,
+                            url: window.location.origin
+                        });
+                    } else {
+                        // Fallback: copy to clipboard
+                        navigator.clipboard.writeText(text).then(() => {
+                            alert('Results copied to clipboard!');
+                        });
+                    }
+                },
+                downloadResults() {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    // Colors
+                    const colors = {
+                        primary: [102, 126, 234],
+                        secondary: [118, 75, 162],
+                        success: [16, 185, 129],
+                        warning: [245, 158, 11],
+                        danger: [239, 68, 68],
+                        info: [59, 130, 246],
+                        light: [248, 250, 252],
+                        dark: [31, 41, 55]
+                    };
+                    
+                    // Header with gradient effect
+                    doc.setFillColor(colors.primary[0], colors.primary[1], colors.primary[2]);
+                    doc.rect(0, 0, 210, 40, 'F');
+                    
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(24);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('🏆 ' + this.translations.title, 20, 25);
+                    
+                    // Date
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 35);
+                    
+                    let yPosition = 60;
+                    
+                    // Performance Summary Box
+                    doc.setFillColor(colors.light[0], colors.light[1], colors.light[2]);
+                    doc.roundedRect(15, yPosition, 180, 35, 5, 5, 'F');
+                    
+                    doc.setTextColor(colors.dark[0], colors.dark[1], colors.dark[2]);
+                    doc.setFontSize(16);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(this.getPerformanceTitle(), 25, yPosition + 12);
+                    
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(this.getPerformanceDescription(), 25, yPosition + 20);
+                    
+                    yPosition += 50;
+                    
+                    // Stats Table
+                    const statsData = [
+                        ['Metric', 'Value', 'Rating'],
+                        [this.translations.wordsPerMinute, `${this.results.wpm} ${this.translations.wpm}`, this.getWpmRating()],
+                        [this.translations.accuracy, `${this.results.accuracy}%`, this.getAccuracyRating()],
+                        [this.translations.charactersTyped, `${this.results.characters}`, ''],
+                        [`${this.translations.correct} Characters`, `${this.results.correctChars}`, ''],
+                        [this.translations.errors, `${this.results.errors}`, this.getErrorRating()],
+                        [this.translations.timeTaken, `${this.results.timeUsed}s`, ''],
+                        [this.translations.difficultyLevel, this.getDifficultyTranslation(), '']
+                    ];
+                    
+                    doc.autoTable({
+                        startY: yPosition,
+                        head: [statsData[0]],
+                        body: statsData.slice(1),
+                        theme: 'grid',
+                        headStyles: {
+                            fillColor: colors.primary,
+                            textColor: [255, 255, 255],
+                            fontSize: 12,
+                            fontStyle: 'bold'
+                        },
+                        bodyStyles: {
+                            fontSize: 10,
+                            textColor: colors.dark
+                        },
+                        alternateRowStyles: {
+                            fillColor: [248, 250, 252]
+                        },
+                        margin: { left: 20, right: 20 }
+                    });
+                    
+                    yPosition = doc.lastAutoTable.finalY + 20;
+                    
+                    // Performance Visualization
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(this.translations.performanceComparison, 20, yPosition);
+                    yPosition += 15;
+                    
+                    // WPM Progress Bar
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(`${this.translations.typingSpeed} (${this.translations.wpm}):`, 20, yPosition);
+                    
+                    const wpmPercentage = Math.min(this.results.wpm / 60, 1);
+                    const barWidth = 120;
+                    const barHeight = 8;
+                    
+                    // Background bar
+                    doc.setFillColor(220, 220, 220);
+                    doc.rect(20, yPosition + 3, barWidth, barHeight, 'F');
+                    
+                    // Progress bar
+                    const progressColor = this.results.wpm >= 50 ? colors.success : 
+                                        this.results.wpm >= 35 ? colors.info : 
+                                        this.results.wpm >= 25 ? colors.warning : colors.danger;
+                    doc.setFillColor(progressColor[0], progressColor[1], progressColor[2]);
+                    doc.rect(20, yPosition + 3, barWidth * wpmPercentage, barHeight, 'F');
+                    
+                    doc.text(`${this.results.wpm} ${this.translations.wpm}`, 150, yPosition + 8);
+                    yPosition += 25;
+                    
+                    // Accuracy Progress Bar
+                    doc.text(`${this.translations.accuracy} (%):`, 20, yPosition);
+                    
+                    const accuracyPercentage = this.results.accuracy / 100;
+                    const accuracyColor = this.results.accuracy >= 95 ? colors.success : 
+                                        this.results.accuracy >= 90 ? colors.info : 
+                                        this.results.accuracy >= 85 ? colors.warning : colors.danger;
+                    
+                    // Background bar
+                    doc.setFillColor(220, 220, 220);
+                    doc.rect(20, yPosition + 3, barWidth, barHeight, 'F');
+                    
+                    // Progress bar
+                    doc.setFillColor(accuracyColor[0], accuracyColor[1], accuracyColor[2]);
+                    doc.rect(20, yPosition + 3, barWidth * accuracyPercentage, barHeight, 'F');
+                    
+                    doc.text(`${this.results.accuracy}%`, 150, yPosition + 8);
+                    yPosition += 30;
+                    
+                    // Recommendations Section
+                    doc.setFontSize(14);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(this.translations.tipsRecommendations, 20, yPosition);
+                    yPosition += 10;
+                    
+                    doc.setFontSize(10);
+                    doc.setFont('helvetica', 'normal');
+                    
+                    const tips = this.getTips();
+                    tips.forEach((tip, index) => {
+                        if (yPosition > 250) {
+                            doc.addPage();
+                            yPosition = 20;
+                        }
+                        doc.text(`• ${tip}`, 25, yPosition);
+                        yPosition += 8;
+                    });
+                    
+                    yPosition += 15;
+                    
+                    // Footer
+                    if (yPosition > 250) {
+                        doc.addPage();
+                        yPosition = 20;
+                    }
+                    
+                    doc.setFillColor(colors.dark[0], colors.dark[1], colors.dark[2]);
+                    doc.rect(0, yPosition, 210, 20, 'F');
+                    
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFontSize(8);
+                    doc.text(this.translations.footerMessage, 20, yPosition + 12);
+                    doc.text('Generated by Typing Test App', 150, yPosition + 12);
+                    
+                    // Save the PDF
+                    const fileName = `typing-test-results-${new Date().toISOString().split('T')[0]}.pdf`;
+                    doc.save(fileName);
+                },
+                takeAnotherTest() {
+                    window.location.href = 'index.html';
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
+
