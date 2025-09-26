@@ -369,56 +369,69 @@
             </h2>
             
             <div v-if="!inLobby" class="text-center">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <button @click="createRoom" :disabled="isCreatingRoom || isJoiningRoom" 
-                            :class="['btn-primary bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300',
-                                    (isCreatingRoom || isJoiningRoom) ? 'opacity-50 cursor-not-allowed' : '']">
-                        <div v-if="isCreatingRoom" class="flex items-center justify-center">
-                            <div class="loading-spinner rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                <!-- Loading State for Room Creation -->
+                <div v-if="isCreatingRoom" class="bg-gradient-to-r from-green-100 to-blue-100 p-8 rounded-lg mb-6">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="loading-spinner rounded-full h-12 w-12 border-b-4 border-green-600 mb-4"></div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">
                             {{ translations.creatingRoom || 'Creating Room...' }}
+                        </h3>
+                        <p class="text-gray-600 text-sm">
+                            {{ translations.creatingRoomDesc || 'Please wait while we set up your room...' }}
+                        </p>
+                        <div class="mt-4 flex space-x-1">
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
                         </div>
-                        <div v-else class="flex items-center">
+                    </div>
+                </div>
+
+                <!-- Loading State for Room Joining -->
+                <div v-else-if="isJoiningRoom" class="bg-gradient-to-r from-blue-100 to-purple-100 p-8 rounded-lg mb-6">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="loading-spinner rounded-full h-12 w-12 border-b-4 border-blue-600 mb-4"></div>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                            {{ translations.joiningRoom || 'Joining Room...' }}
+                        </h3>
+                        <p class="text-gray-600 text-sm">
+                            {{ translations.joiningRoomDesc || 'Connecting to the room...' }}
+                        </p>
+                        <div class="mt-4 flex space-x-1">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce"></div>
+                            <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                            <div class="w-2 h-2 bg-blue-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Normal State - Show Buttons -->
+                <div v-else>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <button @click="createRoom" class="btn-primary bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold">
                             <i class="fas fa-plus mr-2"></i>
                             {{ translations.createRoom || 'Create Room' }}
-                        </div>
-                    </button>
-                    <button @click="showJoinRoom = true" :disabled="isCreatingRoom || isJoiningRoom"
-                            :class="['btn-primary bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300',
-                                    (isCreatingRoom || isJoiningRoom) ? 'opacity-50 cursor-not-allowed' : '']">
-                        <div v-if="isJoiningRoom" class="flex items-center justify-center">
-                            <div class="loading-spinner rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                            {{ translations.joiningRoom || 'Joining Room...' }}
-                        </div>
-                        <div v-else class="flex items-center">
+                        </button>
+                        <button @click="showJoinRoom = true" class="btn-primary bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
                             <i class="fas fa-sign-in-alt mr-2"></i>
                             {{ translations.joinRoom || 'Join Room' }}
-                        </div>
-                    </button>
-                </div>
-                
-                <!-- Join Room Form -->
-                <div v-if="showJoinRoom" class="bg-gray-50 p-4 rounded-lg">
-                    <div class="flex gap-2">
-                        <input v-model="roomCode" type="text" :placeholder="translations.enterRoomCode || 'Enter Room Code'" 
-                               :disabled="isJoiningRoom"
-                               :class="['flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none transition-all duration-300',
-                                       isJoiningRoom ? 'opacity-50 cursor-not-allowed' : 'focus:border-blue-500']">
-                        <button @click="joinRoom" :disabled="isJoiningRoom || !roomCode.trim()"
-                                :class="['bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300',
-                                        (isJoiningRoom || !roomCode.trim()) ? 'opacity-50 cursor-not-allowed' : '']">
-                            <div v-if="isJoiningRoom" class="flex items-center">
-                                <div class="loading-spinner rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                                {{ translations.joining || 'Joining...' }}
-                            </div>
-                            <div v-else>
+                        </button>
+                    </div>
+                    
+                    <!-- Join Room Form -->
+                    <div v-if="showJoinRoom" class="bg-gray-50 p-4 rounded-lg">
+                        <div class="flex gap-2">
+                            <input v-model="roomCode" type="text" :placeholder="translations.enterRoomCode || 'Enter Room Code'" 
+                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                            <button @click="joinRoom" :disabled="!roomCode.trim()"
+                                    :class="['bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300',
+                                            !roomCode.trim() ? 'opacity-50 cursor-not-allowed' : '']">
                                 {{ translations.join || 'Join' }}
-                            </div>
-                        </button>
-                        <button @click="showJoinRoom = false" :disabled="isJoiningRoom"
-                                :class="['bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300',
-                                        isJoiningRoom ? 'opacity-50 cursor-not-allowed' : '']">
-                            {{ translations.cancel || 'Cancel' }}
-                        </button>
+                            </button>
+                            <button @click="showJoinRoom = false" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold">
+                                {{ translations.cancel || 'Cancel' }}
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -986,7 +999,9 @@
                             typing: "Typing...",
                             creatingRoom: "Creating Room...",
                             joiningRoom: "Joining Room...",
-                            joining: "Joining..."
+                            joining: "Joining...",
+                            creatingRoomDesc: "Please wait while we set up your room...",
+                            joiningRoomDesc: "Connecting to the room..."
                         },
                         ru: {
                             title: "Тест Печати",
@@ -1044,7 +1059,9 @@
                             typing: "Печатает...",
                             creatingRoom: "Создание Комнаты...",
                             joiningRoom: "Подключение к Комнате...",
-                            joining: "Подключение..."
+                            joining: "Подключение...",
+                            creatingRoomDesc: "Пожалуйста, подождите, пока мы настраиваем вашу комнату...",
+                            joiningRoomDesc: "Подключение к комнате..."
                         },
                         uz: {
                             title: "Yozish Testi",
@@ -1102,7 +1119,9 @@
                             typing: "Yozyapti...",
                             creatingRoom: "Xona Yaratilmoqda...",
                             joiningRoom: "Xonaga Qo'shilmoqda...",
-                            joining: "Qo'shilmoqda..."
+                            joining: "Qo'shilmoqda...",
+                            creatingRoomDesc: "Iltimos, xonangizni sozlashni kutib turing...",
+                            joiningRoomDesc: "Xonaga ulanish..."
                         }
                     };
                     return translations[language] || translations.en;
