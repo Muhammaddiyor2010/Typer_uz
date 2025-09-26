@@ -408,9 +408,14 @@
                 <!-- Normal State - Show Buttons -->
                 <div v-else>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                        <button @click="createRoom" class="btn-primary bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold">
-                            <i class="fas fa-plus mr-2"></i>
+                        <button disabled class="bg-gray-400 text-gray-600 px-6 py-3 rounded-lg font-semibold cursor-not-allowed opacity-50 relative">
+                            <i class="fas fa-lock mr-2"></i>
                             {{ translations.createRoom || 'Create Room' }}
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-xs bg-red-500 text-white px-2 py-1 rounded-full">
+                                    {{ translations.disabled || 'Disabled' }}
+                                </span>
+                            </div>
                         </button>
                         <button @click="showJoinRoom = true" class="btn-primary bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
                             <i class="fas fa-sign-in-alt mr-2"></i>
@@ -1001,7 +1006,8 @@
                             joiningRoom: "Joining Room...",
                             joining: "Joining...",
                             creatingRoomDesc: "Please wait while we set up your room...",
-                            joiningRoomDesc: "Connecting to the room..."
+                            joiningRoomDesc: "Connecting to the room...",
+                            disabled: "Disabled"
                         },
                         ru: {
                             title: "Тест Печати",
@@ -1061,7 +1067,8 @@
                             joiningRoom: "Подключение к Комнате...",
                             joining: "Подключение...",
                             creatingRoomDesc: "Пожалуйста, подождите, пока мы настраиваем вашу комнату...",
-                            joiningRoomDesc: "Подключение к комнате..."
+                            joiningRoomDesc: "Подключение к комнате...",
+                            disabled: "Отключено"
                         },
                         uz: {
                             title: "Yozish Testi",
@@ -1121,7 +1128,8 @@
                             joiningRoom: "Xonaga Qo'shilmoqda...",
                             joining: "Qo'shilmoqda...",
                             creatingRoomDesc: "Iltimos, xonangizni sozlashni kutib turing...",
-                            joiningRoomDesc: "Xonaga ulanish..."
+                            joiningRoomDesc: "Xonaga ulanish...",
+                            disabled: "O'chirilgan"
                         }
                     };
                     return translations[language] || translations.en;
