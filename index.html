@@ -1,49 +1,123 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Test your typing speed and accuracy with our interactive typing test. Choose from Easy, Medium, or Hard difficulty levels. Features dark mode and real-time statistics.">
+    <meta name="description"
+        content="Test your typing speed and accuracy with our interactive typing test. Choose from Easy, Medium, or Hard difficulty levels. Features dark mode and real-time statistics.">
     <meta name="keywords" content="typing test, typing speed, WPM, accuracy, keyboard, practice, typing game">
     <meta name="author" content="Typing Test App">
     <meta property="og:title" content="Typing Test - Speed & Accuracy">
-    <meta property="og:description" content="Test your typing speed and accuracy with our interactive typing test. Choose from Easy, Medium, or Hard difficulty levels.">
+    <meta property="og:description"
+        content="Test your typing speed and accuracy with our interactive typing test. Choose from Easy, Medium, or Hard difficulty levels.">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary_large_image">
     <title>Typing Test - Speed & Accuracy</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⌨️</text></svg>">
+    <link rel="icon" type="image/x-icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⌨️</text></svg>">
     <link rel="manifest" href="manifest.json">
     <style>
         .typing-text {
             font-family: 'Courier New', monospace;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
         }
+
         .correct {
             background-color: #10b981;
             color: white;
         }
+
         .incorrect {
             background-color: #ef4444;
             color: white;
         }
+
         .current {
             background-color: #3b82f6;
             color: white;
             animation: blink 1s infinite;
         }
+
         @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0.3; }
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0.3;
+            }
+        }
+        
+        /* Custom dropdown styling */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        }
+        
+        select:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1), 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+        
+        select option {
+            background-color: white;
+            color: #7c3aed;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            font-weight: 600;
+            font-size: 1.5rem;
+            line-height: 1.5;
+            transition: all 0.2s ease;
+        }
+        
+        select option:hover {
+            background-color: #f8fafc;
+            color: #5b21b6;
+        }
+        
+        select option:checked,
+        select option:focus {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: 700;
+        }
+        
+        select option:first-child {
+            border-top-left-radius: 0.5rem;
+            border-top-right-radius: 0.5rem;
+        }
+        
+        select option:last-child {
+            border-bottom-left-radius: 0.5rem;
+            border-bottom-right-radius: 0.5rem;
+            border-bottom: none;
         }
     </style>
 </head>
+
 <body class="bg-gray-100 min-h-screen">
     <div id="app" class="container mx-auto px-4 py-8">
         <!-- Language Selector -->
         <div class="fixed top-4 right-4 z-50">
-            <select v-model="selectedLanguage" @change="changeLanguage" class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium shadow-lg">
+            <select v-model="selectedLanguage" @change="changeLanguage"
+                class="bg-white border border-gray-300 rounded-lg px-3 py-2 text-sm font-medium shadow-lg">
                 <option value="en">🇺🇸 English</option>
                 <option value="ru">🇷🇺 Русский</option>
                 <option value="uz">🇺🇿 O'zbek</option>
@@ -63,22 +137,19 @@
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">{{ translations.chooseDifficulty }}</h2>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                    @click="selectDifficulty('easy')" 
+                <button @click="selectDifficulty('easy')"
                     :class="['px-6 py-3 rounded-lg font-semibold transition-all duration-200', 
                             selectedDifficulty === 'easy' ? 'bg-green-600 text-white shadow-lg' : 'bg-green-100 text-green-700 hover:bg-green-200']">
                     <i class="fas fa-leaf mr-2"></i>
                     {{ translations.easy }}
                 </button>
-                <button 
-                    @click="selectDifficulty('medium')" 
+                <button @click="selectDifficulty('medium')"
                     :class="['px-6 py-3 rounded-lg font-semibold transition-all duration-200', 
                             selectedDifficulty === 'medium' ? 'bg-yellow-600 text-white shadow-lg' : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200']">
                     <i class="fas fa-fire mr-2"></i>
                     {{ translations.medium }}
                 </button>
-                <button 
-                    @click="selectDifficulty('hard')" 
+                <button @click="selectDifficulty('hard')"
                     :class="['px-6 py-3 rounded-lg font-semibold transition-all duration-200', 
                             selectedDifficulty === 'hard' ? 'bg-red-600 text-white shadow-lg' : 'bg-red-100 text-red-700 hover:bg-red-200']">
                     <i class="fas fa-bolt mr-2"></i>
@@ -90,6 +161,154 @@
                     <i class="fas fa-info-circle mr-1"></i>
                     {{ getDifficultyDescription() }}
                 </span>
+            </div>
+        </div>
+
+        <!-- Lobby Section -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">
+                <i class="fas fa-users mr-2 text-blue-600"></i>
+                {{ translations.lobby || 'Multiplayer Lobby' }}
+            </h2>
+            
+            <div v-if="!inLobby" class="text-center">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <button @click="createRoom" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-plus mr-2"></i>
+                        {{ translations.createRoom || 'Create Room' }}
+                    </button>
+                    <button @click="showJoinRoom = true" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        {{ translations.joinRoom || 'Join Room' }}
+                    </button>
+                </div>
+                
+                <!-- Join Room Form -->
+                <div v-if="showJoinRoom" class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex gap-2">
+                        <input v-model="roomCode" type="text" :placeholder="translations.enterRoomCode || 'Enter Room Code'" 
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
+                        <button @click="joinRoom" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
+                            {{ translations.join || 'Join' }}
+                        </button>
+                        <button @click="showJoinRoom = false" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold">
+                            {{ translations.cancel || 'Cancel' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- In Lobby -->
+            <div v-else class="text-center">
+                <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-2">
+                        <i class="fas fa-door-open mr-2"></i>
+                        {{ translations.roomCode || 'Room Code' }}: 
+                        <span @click="copyRoomCode" class="cursor-pointer bg-blue-100 hover:bg-blue-200 px-3 py-1 rounded-lg transition-colors select-none" title="Click to copy">
+                            {{ currentRoomCode }}
+                            <i class="fas fa-copy ml-2 text-blue-600"></i>
+                        </span>
+                    </h3>
+                    <p class="text-sm text-blue-600">{{ translations.shareCode || 'Share this code with friends to join' }}</p>
+                    <div v-if="codeCopied" class="text-sm text-green-600 mt-2">
+                        <i class="fas fa-check mr-1"></i>
+                        {{ translations.codeCopied || 'Code copied to clipboard!' }}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 mb-2">{{ translations.players || 'Players' }}</h4>
+                        
+                        <!-- Player Name Editor -->
+                        <div class="mb-3 p-2 bg-blue-50 rounded-lg">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">{{ translations.yourName || 'Your Name' }}:</label>
+                            <div class="flex gap-2">
+                                <input v-model="playerName" @blur="updatePlayerName" @keyup.enter="updatePlayerName" 
+                                       class="flex-1 px-2 py-1 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none"
+                                       :placeholder="translations.enterName || 'Enter your name'">
+                                <button @click="updatePlayerName" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Players List -->
+                        <div class="space-y-2">
+                            <div v-for="player in players" :key="player.id" 
+                                 :class="['p-2 rounded flex items-center justify-between', player.isReady ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600']">
+                                <div class="flex items-center">
+                                    <i class="fas fa-user mr-2"></i>
+                                    {{ player.name }}
+                                    <span v-if="player.isReady" class="ml-2 text-green-600">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                </div>
+                                <div v-if="player.id === 1" class="text-xs text-gray-500">
+                                    {{ translations.you || 'You' }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-gray-800 mb-2">{{ translations.roomSettings || 'Room Settings' }}</h4>
+                        <div class="space-y-3 text-sm">
+                            <!-- Difficulty Setting -->
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">{{ translations.difficulty || 'Difficulty' }}:</label>
+                                <select v-model="selectedDifficulty" @change="updateRoomSettings" class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none">
+                                    <option value="easy">{{ translations.easy || 'Easy' }}</option>
+                                    <option value="medium">{{ translations.medium || 'Medium' }}</option>
+                                    <option value="hard">{{ translations.hard || 'Hard' }}</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Duration Setting -->
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">{{ translations.duration || 'Duration' }}:</label>
+                                <select v-model="selectedTime" @change="updateRoomSettings" class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none">
+                                    <option value="30">30 {{ translations.seconds || 'sec' }}</option>
+                                    <option value="60">60 {{ translations.seconds || 'sec' }}</option>
+                                    <option value="90">90 {{ translations.seconds || 'sec' }}</option>
+                                    <option value="120">120 {{ translations.seconds || 'sec' }}</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Max Players Setting -->
+                            <div>
+                                <label class="block text-gray-700 font-medium mb-1">{{ translations.maxPlayers || 'Max Players' }}:</label>
+                                <select v-model="maxPlayers" @change="updateRoomSettings" class="w-full px-2 py-1 border border-gray-300 rounded text-sm focus:border-blue-500 focus:outline-none">
+                                    <option value="2">2 {{ translations.players || 'Players' }}</option>
+                                    <option value="3">3 {{ translations.players || 'Players' }}</option>
+                                    <option value="4">4 {{ translations.players || 'Players' }}</option>
+                                    <option value="6">6 {{ translations.players || 'Players' }}</option>
+                                    <option value="8">8 {{ translations.players || 'Players' }}</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Current Players Count -->
+                            <div class="pt-2 border-t border-gray-200">
+                                <div class="text-gray-600">
+                                    {{ translations.currentPlayers || 'Current' }}: {{ players.length }}/{{ maxPlayers }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex gap-4 justify-center">
+                    <button @click="toggleReady" 
+                            :class="['px-6 py-3 rounded-lg font-semibold transition-colors',
+                                   isReady ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-yellow-600 hover:bg-yellow-700 text-white']">
+                        <i class="fas fa-check mr-2"></i>
+                        {{ isReady ? (translations.ready || 'Ready') : (translations.notReady || 'Not Ready') }}
+                    </button>
+                    <button @click="leaveRoom" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        {{ translations.leaveRoom || 'Leave Room' }}
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -105,8 +324,19 @@
                     <div class="text-sm text-gray-600">{{ translations.accuracy }}</div>
                 </div>
                 <div class="bg-purple-50 p-4 rounded-lg">
-                    <div class="text-2xl font-bold text-purple-600">{{ timeLeft }}</div>
-                    <div class="text-sm text-gray-600">{{ translations.timeLeft }}</div>
+                    <div v-if="!testStarted" class="text-center">
+                        <select v-model="selectedTime" @change="selectTime(selectedTime)" class="w-full text-center text-2xl font-bold text-purple-600 bg-transparent border-none outline-none cursor-pointer appearance-none">
+                            <option value="30" class="bg-white text-purple-600 py-2 px-4 border-b border-gray-200 hover:bg-purple-50">30</option>
+                            <option value="60" class="bg-white text-purple-600 py-2 px-4 border-b border-gray-200 hover:bg-purple-50">60</option>
+                            <option value="90" class="bg-white text-purple-600 py-2 px-4 border-b border-gray-200 hover:bg-purple-50">90</option>
+                            <option value="120" class="bg-white text-purple-600 py-2 px-4 hover:bg-purple-50">120</option>
+                        </select>
+                        <div class="text-sm text-gray-600">{{ translations.chooseTime || 'Choose Duration' }}</div>
+                    </div>
+                    <div v-else class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">{{ timeLeft }}</div>
+                        <div class="text-sm text-gray-600">{{ translations.timeLeft }}</div>
+                    </div>
                 </div>
                 <div class="bg-orange-50 p-4 rounded-lg">
                     <div class="text-2xl font-bold text-orange-600">{{ charactersTyped }}</div>
@@ -119,9 +349,20 @@
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <!-- Test Text Display -->
             <div class="mb-6">
-                <div class="typing-text text-lg leading-relaxed p-4 bg-gray-50 rounded-lg border-2 border-gray-200 min-h-[120px]">
-                    <span v-for="(char, index) in textArray" :key="index" 
-                          :class="getCharClass(index)">
+                <!-- Line progress indicators - only show for Medium and Hard levels -->
+                <div v-if="selectedDifficulty !== 'easy'" class="flex justify-between items-center mb-2">
+                    <span class="text-sm text-gray-600">
+                        <i class="fas fa-align-left mr-1"></i>
+                        {{ translations.lineProgress || 'Line' }} {{ currentLineIndex + 1 }} / {{ allLines.length }}
+                    </span>
+                    <span class="text-sm text-gray-600">
+                        <i class="fas fa-keyboard mr-1"></i>
+                        {{ userInput.length }} / {{ currentLine.length }} {{ translations.characters || 'characters' }}
+                    </span>
+                </div>
+                <div
+                    class="typing-text text-lg leading-relaxed p-4 bg-gray-50 rounded-lg border-2 border-gray-200 min-h-[120px]">
+                    <span v-for="(char, index) in textArray" :key="index" :class="getCharClass(index)">
                         {{ char }}
                     </span>
                 </div>
@@ -129,12 +370,8 @@
 
             <!-- Input Area -->
             <div class="mb-6">
-                <textarea 
-                    v-model="userInput" 
-                    @input="handleInput"
-                    @keydown="handleKeyDown"
-                    :disabled="!testStarted || testFinished"
-                    :placeholder="translations.placeholder"
+                <textarea v-model="userInput" @input="handleInput" @keydown="handleKeyDown"
+                    :disabled="!testStarted || testFinished" :placeholder="translations.placeholder"
                     class="w-full p-4 text-lg border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none resize-none"
                     rows="3">
                 </textarea>
@@ -142,24 +379,19 @@
 
             <!-- Controls -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <button 
-                    @click="startTest" 
-                    v-if="!testStarted"
+                <button @click="startTest" v-if="!testStarted"
                     class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                     <i class="fas fa-play mr-2"></i>
                     {{ translations.startTest }}
                 </button>
-                
-                <button 
-                    @click="resetTest" 
-                    v-if="testStarted || testFinished"
+
+                <button @click="resetTest" v-if="testStarted || testFinished"
                     class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                     <i class="fas fa-redo mr-2"></i>
                     {{ translations.resetTest }}
                 </button>
 
-                <button 
-                    @click="changeText" 
+                <button @click="changeText"
                     class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                     <i class="fas fa-sync mr-2"></i>
                     {{ translations.newText }} {{ getDifficultyTranslation() }}
@@ -182,7 +414,7 @@
                         {{ getDifficultyTranslation() }} {{ translations.level }}
                     </span>
                 </p>
-                
+
                 <div class="space-y-4 mb-6">
                     <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
                         <span class="font-semibold">{{ translations.wordsPerMinute }}:</span>
@@ -218,7 +450,7 @@
             <div class="mt-4 pt-4 border-t border-gray-300">
                 <p class="text-sm text-gray-500">
                     <i class="fas fa-code mr-1"></i>
-                    {{ translations.createdBy }} 
+                    {{ translations.createdBy }}
                     <span class="font-semibold text-blue-600">Muhammaddiyorjon</span>
                 </p>
             </div>
@@ -226,6 +458,103 @@
     </div>
 
     <script>
+        // Copy Protection Script
+        (function () {
+            // Disable right-click context menu
+            document.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Disable copy/paste keyboard shortcuts
+            document.addEventListener('keydown', function (e) {
+                // Disable Ctrl+C, Ctrl+A, Ctrl+V, Ctrl+X, Ctrl+S, Ctrl+P
+                if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 65 || e.keyCode === 86 || e.keyCode === 88 || e.keyCode === 83 || e.keyCode === 80)) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Disable F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U (view source)
+                if (e.keyCode === 123 || (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) || (e.ctrlKey && e.keyCode === 85)) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Disable Ctrl+Shift+C (inspect element)
+                if (e.ctrlKey && e.shiftKey && e.keyCode === 67) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Disable text selection
+            document.addEventListener('selectstart', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Disable drag and drop
+            document.addEventListener('dragstart', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Disable copy on mouse events
+            document.addEventListener('copy', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Disable cut
+            document.addEventListener('cut', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Disable paste
+            document.addEventListener('paste', function (e) {
+                e.preventDefault();
+                return false;
+            });
+
+            // Disable print screen (partial protection)
+            document.addEventListener('keyup', function (e) {
+                if (e.keyCode === 44) { // Print Screen key
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // Disable developer tools detection
+            let devtools = { open: false, orientation: null };
+            setInterval(function () {
+                if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+                    if (!devtools.open) {
+                        devtools.open = true;
+                        document.body.innerHTML = '<div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:Arial;font-size:24px;color:red;">Developer tools detected. Please close them to continue.</div>';
+                    }
+                } else {
+                    devtools.open = false;
+                }
+            }, 500);
+
+            // Disable text selection on typing text area specifically
+            document.addEventListener('DOMContentLoaded', function () {
+                const typingText = document.querySelector('.typing-text');
+                if (typingText) {
+                    typingText.addEventListener('mousedown', function (e) {
+                        e.preventDefault();
+                        return false;
+                    });
+
+                    typingText.addEventListener('mouseup', function (e) {
+                        e.preventDefault();
+                        return false;
+                    });
+                }
+            });
+        })();
+
         const { createApp } = Vue;
 
         createApp({
@@ -236,135 +565,122 @@
                     // Test texts organized by difficulty
                     texts: {
                         easy: [
-                            "The cat sat on the mat. It was a sunny day. The bird flew high in the sky. I like to read books. My dog is very friendly. We play games together. The sun shines bright. I love my family. Good morning everyone. Have a nice day.",
-                            "Hello world! This is easy text. I can type fast. The quick fox runs. Jump over the log. Red car drives by. Blue sky above us. Green grass grows tall. Yellow sun shines bright. Black cat walks slowly.",
-                            "One two three four five. Six seven eight nine ten. I can count to ten. The dog barks loud. The cat meows softly. Birds sing sweet songs. Flowers bloom in spring. Trees grow very tall. Water flows in rivers. Fish swim in oceans.",
-                            "My name is John. I am ten years old. I live in a big house. I have a pet dog. His name is Max. We play together every day. I love to read books. My favorite color is blue. I like to eat pizza. School is fun for me.",
-                            "The sky is blue today. Clouds are white and fluffy. The wind blows gently. Birds fly in the sky. Trees sway in the breeze. Flowers bloom in gardens. Children play outside. Families have picnics. Everyone is happy. Life is beautiful.",
-                            "I wake up early every morning. The alarm clock rings at seven. I brush my teeth and wash my face. Then I eat breakfast with my family. My mom makes delicious pancakes. I drink orange juice and eat toast. After breakfast, I get dressed for school.",
-                            "The park is a wonderful place to visit. There are many trees and flowers. Children play on the swings and slides. Families have picnics on the grass. Dogs run around and play fetch. The sun shines through the leaves. It is peaceful and quiet here.",
-                            "My favorite season is summer. The weather is warm and sunny. I can go swimming in the pool. We have ice cream and cold drinks. The days are long and bright. I play outside with my friends. Summer vacation is the best time of year.",
-                            "Cooking is a fun activity to learn. You need fresh ingredients and good recipes. Start with simple dishes like pasta or soup. Follow the instructions carefully. Use the right amount of salt and pepper. Taste your food as you cook. Practice makes perfect in the kitchen.",
-                            "Reading books is very important for learning. Books teach us new things every day. They take us to different places and times. We can learn about history and science. Stories help us understand people better. Libraries have thousands of books to choose from.",
-                            "Exercise is good for your health. You should walk or run every day. Playing sports helps you stay strong. Swimming is great for your muscles. Yoga helps you relax and stretch. Find an activity you enjoy doing. Being active makes you feel happy and energetic.",
-                            "Music makes life more beautiful. People listen to songs every day. Some people play instruments like piano or guitar. Singing brings joy to many hearts. Different cultures have unique musical styles. Concerts are fun events to attend. Music connects people from all over the world.",
-                            "Friends are very important in life. Good friends help you when you need them. They listen to your problems and give advice. You can share your secrets with them. Friends make you laugh and have fun. They support you in good times and bad. True friendship lasts forever.",
-                            "The ocean is vast and mysterious. Waves crash against the shore every day. Fish swim in the deep blue water. Dolphins jump and play in the waves. The beach is covered with soft sand. People build sandcastles and collect shells. The sunset over the ocean is breathtaking.",
-                            "Learning a new language is exciting. You can talk to people from other countries. Start with basic words and phrases. Practice speaking every day. Watch movies in that language. Read books and listen to music. Travel to places where they speak that language.",
-                            "Gardening is a relaxing hobby. You plant seeds in the soil. Water them regularly and give them sunlight. Watch your plants grow bigger each day. Flowers bloom in beautiful colors. Vegetables taste better when you grow them yourself. Gardening teaches you patience and care.",
-                            "The library is a quiet place to study. Books are organized on tall shelves. Librarians help you find what you need. You can read magazines and newspapers. There are computers for research. Students come here to do homework. The library is open every day of the week.",
-                            "Pets bring happiness to families. Dogs are loyal and friendly companions. Cats are independent but loving animals. Birds sing beautiful songs in cages. Fish swim peacefully in aquariums. Taking care of pets teaches responsibility. Animals need food, water, and love every day.",
-                            "The mountains are tall and majestic. Snow covers the peaks in winter. Hikers climb the steep trails carefully. The view from the top is amazing. Fresh air fills your lungs. Wildlife lives in the forests below. Mountain climbing is an adventurous sport.",
-                            "Art and creativity are important for the mind. People paint pictures with bright colors. Sculptors shape clay into beautiful forms. Photographers capture special moments. Musicians create melodies and harmonies. Writers tell stories with words. Art helps us express our feelings and ideas."
+                            "Hi there! How are you doing today? I hope you're having a wonderful time. The weather looks nice outside. Maybe we should go for a walk later. What do you think about that idea?",
+                            "Good morning! Did you sleep well last night? I had a strange dream about flying. In my dream, I could soar above the clouds. It felt so real and amazing. Dreams can be so interesting sometimes.",
+                            "I love reading books in my free time. My favorite genre is mystery novels. They keep me guessing until the very end. Have you read any good books lately? I'm always looking for recommendations.",
+                            "Cooking dinner tonight sounds like a great plan. I think I'll make pasta with tomato sauce. It's simple but delicious. Do you want to help me in the kitchen? We can listen to music while we cook.",
+                            "My dog loves playing fetch in the backyard. He runs so fast when I throw the ball. Sometimes he brings it back, sometimes he doesn't. Dogs are such funny and loyal companions.",
+                            "The coffee shop downtown has the best pastries. I go there every Saturday morning. The barista knows my usual order by heart. It's nice to have a routine place to visit.",
+                            "I'm learning to play the guitar this year. My fingers hurt from pressing the strings. But I'm getting better with practice. Music brings so much joy to my life.",
+                            "Yesterday I met an old friend at the grocery store. We hadn't seen each other in years. We talked for almost an hour in the parking lot. It's amazing how time flies by so quickly.",
+                            "The sunset tonight was absolutely beautiful. The sky turned orange and pink. I wish I had my camera with me. Nature creates the most amazing artwork every day.",
+                            "I'm planning a trip to the beach next month. I love the sound of waves crashing on the shore. Building sandcastles is still fun even as an adult. The ocean always makes me feel peaceful."
                         ],
                         medium: [
-                            "The quick brown fox jumps over the lazy dog. This is a classic typing test sentence that contains every letter of the alphabet. Practice makes perfect when it comes to typing speed and accuracy. Consistency is key to improvement.",
-                            "Programming is the art of telling a computer what to do through a series of instructions. It requires logical thinking, problem-solving skills, and attention to detail. Every programmer starts somewhere and learns through practice.",
-                            "Technology has revolutionized the way we communicate, work, and live our daily lives. From smartphones to artificial intelligence, we are constantly surrounded by innovative solutions that make our lives easier and more efficient.",
-                            "Learning a new skill takes time, patience, and consistent practice. Whether it's playing an instrument, learning a language, or mastering a sport, dedication and perseverance are key to success and personal growth.",
-                            "The internet has connected people from all corners of the world, enabling instant communication and information sharing. Social media platforms have transformed how we interact with friends, family, and colleagues on a daily basis.",
-                            "Climate change represents one of the most pressing challenges of our time, requiring immediate action from governments, businesses, and individuals worldwide. Rising global temperatures, melting ice caps, and extreme weather events serve as clear indicators of the urgent need for environmental protection and sustainable practices.",
-                            "The human brain is an incredibly complex organ that continues to fascinate scientists and researchers. With billions of neurons forming intricate networks, it processes information, stores memories, and controls every aspect of our physical and mental functions.",
-                            "Space exploration has captured humanity's imagination for centuries, driving us to push the boundaries of what is possible. From the first moon landing to the exploration of Mars, these achievements represent the pinnacle of human ingenuity and determination.",
-                            "The digital revolution has transformed every aspect of modern society, from how we work and learn to how we shop and socialize. This technological advancement has created new opportunities while also presenting unique challenges that we must navigate carefully.",
-                            "Education is the foundation upon which societies build their future, providing individuals with the knowledge, skills, and critical thinking abilities necessary to contribute meaningfully to their communities and the world at large.",
-                            "The global economy operates as an interconnected system where events in one region can have far-reaching consequences across the world. Understanding these complex relationships is essential for making informed decisions in business and policy.",
-                            "Mental health awareness has gained significant attention in recent years, recognizing the importance of emotional well-being alongside physical health. This shift in perspective has led to better support systems and reduced stigma surrounding mental health issues.",
-                            "Renewable energy sources such as solar, wind, and hydroelectric power offer promising alternatives to fossil fuels, providing cleaner options for meeting our growing energy demands while reducing environmental impact.",
-                            "The concept of work-life balance has become increasingly important as technology blurs the boundaries between professional and personal time. Finding equilibrium between career ambitions and personal well-being is crucial for long-term happiness and success.",
-                            "Cultural diversity enriches our communities by bringing together different perspectives, traditions, and ways of thinking. This variety fosters creativity, innovation, and mutual understanding among people from various backgrounds.",
-                            "The healthcare industry continues to evolve with advances in medical technology, personalized treatments, and preventive care approaches. These developments promise to improve patient outcomes and make healthcare more accessible to people worldwide.",
-                            "Urban planning plays a crucial role in creating sustainable cities that can accommodate growing populations while maintaining quality of life. Smart city initiatives integrate technology to improve efficiency, reduce waste, and enhance citizen services.",
-                            "The entertainment industry has undergone dramatic changes with the rise of streaming platforms, social media, and digital content creation. These shifts have democratized content production while creating new challenges for traditional media companies.",
-                            "Scientific research drives human progress by expanding our understanding of the natural world and developing solutions to complex problems. Collaboration between researchers, institutions, and countries accelerates the pace of discovery and innovation.",
-                            "The concept of sustainability encompasses environmental, economic, and social dimensions, requiring a holistic approach to ensure that current actions do not compromise the ability of future generations to meet their own needs."
+                            "I've been working from home for the past two years, and it's been quite an adjustment. At first, I missed the office environment and chatting with colleagues during coffee breaks. Now I appreciate the flexibility and the extra time I save by not commuting.",
+                            "My grandmother always told me that cooking is an art form that brings people together. She taught me how to make her famous apple pie when I was twelve. The secret ingredient, she said, was patience and love. I still use her recipe today.",
+                            "Last weekend, I decided to clean out my closet and found clothes I hadn't worn in years. It was like discovering a time capsule of my past fashion choices. Some items brought back fond memories, while others made me wonder what I was thinking.",
+                            "The local farmers market has become my favorite Saturday morning destination. I love talking to the vendors about their produce and learning about different varieties of vegetables. There's something special about buying food directly from the people who grew it.",
+                            "I've been trying to learn Spanish for the past six months using a language learning app. Progress has been slower than I expected, but I can now have basic conversations with my neighbor who speaks Spanish fluently. Practice really does make perfect.",
+                            "My best friend and I have been planning a road trip across the country for next summer. We've been researching interesting places to visit and creating a detailed itinerary. The excitement is building as we get closer to our departure date.",
+                            "I recently started volunteering at the animal shelter on weekends. The dogs and cats there are so grateful for attention and care. It's incredibly rewarding to help these animals find loving homes. I've even considered adopting one myself.",
+                            "The book I'm currently reading is a fascinating biography about a famous scientist. It's amazing to learn about the challenges and breakthroughs that shaped their career. Reading biographies always inspires me to pursue my own goals with more determination.",
+                            "I've been experimenting with different coffee brewing methods lately. Each technique produces a unique flavor profile, from the rich taste of French press to the clean finish of pour-over. My kitchen has become a mini coffee laboratory.",
+                            "The hiking trail near my house offers breathtaking views of the surrounding mountains. I try to walk there at least twice a week, and each visit reveals something new about the landscape. Nature has a way of putting everything into perspective."
                         ],
                         hard: [
-                            "The juxtaposition of quantum mechanics and classical physics presents an intriguing paradox that continues to challenge our understanding of the fundamental nature of reality. Theoretical physicists have been grappling with this conundrum for decades, developing increasingly sophisticated mathematical frameworks to reconcile these seemingly incompatible worldviews.",
-                            "Cryptocurrency and blockchain technology represent a paradigm shift in how we conceptualize digital transactions and decentralized systems. The cryptographic algorithms underlying these technologies ensure security and immutability while enabling peer-to-peer interactions without traditional intermediaries.",
-                            "The philosophical implications of artificial intelligence extend far beyond mere computational capabilities, touching upon questions of consciousness, free will, and the nature of human existence. As machine learning algorithms become increasingly sophisticated, we must grapple with the ethical dimensions of creating systems that may eventually surpass human cognitive abilities.",
-                            "Neuroscience research has revealed the remarkable plasticity of the human brain, demonstrating that neural pathways can be rewired throughout our lives through deliberate practice and environmental stimulation. This neuroplasticity has profound implications for education, rehabilitation, and personal development strategies.",
-                            "The interdisciplinary nature of modern scientific research requires collaboration between experts from diverse fields, including biology, chemistry, physics, mathematics, and computer science. This convergence of knowledge has led to groundbreaking discoveries in areas such as biotechnology, nanotechnology, and quantum computing.",
-                            "The epistemological foundations of contemporary knowledge systems rest upon the intricate interplay between empirical observation, theoretical modeling, and methodological rigor. Philosophers of science continue to debate the nature of truth, the limits of human understanding, and the criteria for establishing reliable knowledge claims in an increasingly complex and interconnected world.",
-                            "Metamorphic processes in geological formations demonstrate the dynamic nature of Earth's crust, where intense pressure and temperature conditions transform existing rock structures into entirely new mineral compositions. These geological transformations occur over millions of years, providing valuable insights into planetary evolution and the formation of natural resources.",
-                            "The thermodynamic principles governing energy transfer in biological systems reveal the elegant efficiency of cellular processes, where complex biochemical reactions maintain homeostasis through intricate feedback mechanisms. Understanding these fundamental processes is crucial for advancing medical treatments and developing sustainable biotechnological solutions.",
-                            "The sociolinguistic implications of digital communication platforms have fundamentally altered the way humans construct meaning, establish social hierarchies, and maintain interpersonal relationships. These technological innovations have created new forms of linguistic expression while simultaneously challenging traditional notions of authenticity and identity in virtual spaces.",
-                            "The mathematical foundations of machine learning algorithms rely heavily on linear algebra, calculus, and statistical theory to optimize complex functions and minimize prediction errors. These computational approaches enable systems to identify patterns in vast datasets, but they also raise important questions about bias, interpretability, and the ethical implications of automated decision-making processes.",
-                            "The cosmological implications of dark matter and dark energy continue to perplex astrophysicists, as these mysterious components appear to constitute the majority of the universe's mass-energy content. Current observational techniques and theoretical models struggle to provide definitive explanations for these phenomena, highlighting the limitations of our current understanding of fundamental physics.",
-                            "The pharmacological mechanisms underlying drug interactions involve complex biochemical pathways that can produce synergistic, antagonistic, or unexpected therapeutic effects. Understanding these intricate relationships is essential for developing safe and effective treatment protocols, particularly in cases involving multiple medications or patients with complex medical histories.",
-                            "The architectural principles of sustainable design integrate environmental considerations with aesthetic and functional requirements, creating buildings that minimize ecological impact while maximizing occupant comfort and energy efficiency. These approaches require careful consideration of local climate conditions, material selection, and long-term maintenance strategies.",
-                            "The psychological mechanisms underlying cognitive biases reveal the systematic ways in which human reasoning deviates from purely rational decision-making processes. These mental shortcuts, while often adaptive in evolutionary terms, can lead to significant errors in judgment, particularly in complex situations requiring careful analysis and critical thinking.",
-                            "The economic implications of globalization have created intricate networks of international trade, capital flows, and labor mobility that transcend traditional national boundaries. These interconnected systems have generated unprecedented prosperity for many while simultaneously creating new forms of inequality and vulnerability that challenge conventional policy frameworks.",
-                            "The molecular mechanisms of gene expression regulation involve complex interactions between transcription factors, chromatin remodeling complexes, and epigenetic modifications that determine when and how genetic information is translated into functional proteins. Understanding these processes is crucial for developing targeted therapies for genetic diseases and cancer treatment.",
-                            "The philosophical foundations of ethics in artificial intelligence require careful consideration of moral agency, responsibility, and the potential for machines to make decisions that affect human welfare. These questions become increasingly urgent as AI systems become more autonomous and are deployed in critical applications such as healthcare, transportation, and criminal justice.",
-                            "The ecological principles governing ecosystem stability involve complex feedback loops between species interactions, nutrient cycling, and environmental factors that maintain biodiversity and functional integrity. Human activities that disrupt these delicate balances can have cascading effects that extend far beyond immediate environmental impacts.",
-                            "The computational complexity of optimization problems in computer science often requires sophisticated algorithmic approaches, including approximation methods, heuristic techniques, and parallel processing strategies. These challenges become particularly acute when dealing with large-scale systems where exact solutions are computationally intractable.",
-                            "The anthropological perspectives on cultural evolution reveal the complex interplay between biological inheritance, social learning, and environmental adaptation that has shaped human societies throughout history. Understanding these processes provides valuable insights into contemporary social challenges and the potential for future cultural development."
+                            "The intricate relationship between quantum mechanics and classical physics continues to fascinate researchers worldwide. Scientists are developing increasingly sophisticated mathematical models to bridge the gap between these seemingly incompatible theories, hoping to unlock the mysteries of our universe's fundamental nature.",
+                            "Blockchain technology has revolutionized how we think about digital transactions and data security. The cryptographic principles underlying these systems ensure that information remains tamper-proof while enabling decentralized networks that operate without traditional central authorities or intermediaries.",
+                            "Artificial intelligence presents profound philosophical questions about consciousness, creativity, and what it means to be human. As machine learning algorithms become more sophisticated, we must carefully consider the ethical implications of creating systems that might eventually match or exceed human cognitive capabilities.",
+                            "Recent neuroscience discoveries have revealed the remarkable adaptability of the human brain throughout our lives. This neuroplasticity demonstrates that our neural pathways can be rewired through focused practice and environmental stimulation, offering new possibilities for education and rehabilitation.",
+                            "Modern scientific research increasingly requires collaboration across multiple disciplines, bringing together experts from biology, chemistry, physics, mathematics, and computer science. This interdisciplinary approach has led to groundbreaking discoveries in biotechnology, nanotechnology, and quantum computing.",
+                            "The philosophical foundations of knowledge and truth continue to challenge contemporary thinkers. Scientists and philosophers debate the nature of reality, the limits of human understanding, and the criteria for establishing reliable knowledge in our complex, interconnected world.",
+                            "Geological processes reveal the dynamic nature of our planet's crust, where immense pressure and temperature conditions transform rock formations over millions of years. These metamorphic processes provide crucial insights into Earth's evolution and the formation of natural resources.",
+                            "The biochemical mechanisms governing cellular energy transfer demonstrate the elegant efficiency of biological systems. Complex molecular interactions maintain cellular homeostasis through sophisticated feedback mechanisms, knowledge that's essential for advancing medical treatments.",
+                            "Digital communication platforms have fundamentally transformed how humans create meaning, establish social connections, and maintain relationships. These technological innovations have introduced new forms of expression while challenging traditional concepts of identity and authenticity.",
+                            "Machine learning algorithms rely on advanced mathematical principles from linear algebra, calculus, and statistics to process vast amounts of data and make predictions. These computational methods raise important questions about algorithmic bias, transparency, and the ethics of automated decision-making.",
+                            "The mysterious nature of dark matter and dark energy continues to puzzle astrophysicists, as these invisible components appear to make up most of the universe's mass and energy. Current observational methods and theoretical models struggle to explain these phenomena completely.",
+                            "Understanding drug interactions requires knowledge of complex biochemical pathways that can produce unexpected therapeutic effects. This knowledge is crucial for developing safe treatment protocols, especially for patients taking multiple medications or those with complex medical conditions.",
+                            "Sustainable architecture integrates environmental considerations with aesthetic and functional design principles. These approaches create buildings that minimize ecological impact while maximizing energy efficiency and occupant comfort through careful material selection and climate-responsive design.",
+                            "Cognitive psychology reveals how human reasoning often deviates from purely logical decision-making processes. These mental shortcuts, while evolutionarily adaptive, can lead to systematic errors in judgment, particularly in complex situations requiring careful analysis.",
+                            "Globalization has created intricate networks of international trade, finance, and labor that transcend traditional national boundaries. These interconnected systems have generated unprecedented economic growth while also creating new forms of inequality that challenge existing policy frameworks."
                         ],
                         // Russian texts
                         easy_ru: [
-                            "Кот сидел на коврике. Был солнечный день. Птица летела высоко в небе. Мне нравится читать книги. Моя собака очень дружелюбная. Мы играем вместе. Солнце светит ярко. Я люблю свою семью. Доброе утро всем. Хорошего дня.",
-                            "Привет мир! Это простой текст. Я могу печатать быстро. Быстрая лиса бежит. Прыгай через бревно. Красная машина проезжает мимо. Синее небо над нами. Зеленая трава растет высоко. Желтое солнце светит ярко. Черный кот идет медленно.",
-                            "Один два три четыре пять. Шесть семь восемь девять десять. Я могу считать до десяти. Собака громко лает. Кот тихо мяукает. Птицы поют сладкие песни. Цветы расцветают весной. Деревья растут очень высоко. Вода течет в реках. Рыбы плавают в океанах.",
-                            "Россия - большая страна. Москва - столица России. Санкт-Петербург красивый город. Волга длинная река. Урал - горы в России. Сибирь очень холодная. Красная площадь в Москве. Кремль старый замок. Матрешка русская игрушка. Самовар для чая.",
-                            "В школе я учусь хорошо. Учителя очень добрые. С друзьями мы играем. В библиотеке много книг. На компьютере играем. Математика и физика сложные. История и география интересные. Спортивные игры веселые. После уроков отдыхаем дома. С семьей обедаем вместе.",
-                            "Летом жарко. Зимой холодно. Весной цветы расцветают. Осенью листья опадают. Солнце светит хорошо. Дождь идет мокро. Ветер дует прохладно. Ночью звезды светят. Луна полная красивая. Природа очень красивая.",
-                            "Через интернет учимся. В Гугле ищем информацию. На Ютубе смотрим видео. В Телеграме отправляем сообщения. В Инстаграме смотрим фото. В Вотсапе общаемся. Компьютер используем. Телефон звоним. Онлайн урокам участвуем. Технология жизнь облегчает."
+                            "Привет! Как дела? Надеюсь, у тебя отличный день. Погода сегодня замечательная. Может быть, стоит прогуляться позже? Что думаешь об этой идее?",
+                            "Доброе утро! Хорошо спал прошлой ночью? Мне приснился странный сон о полете. В моем сне я мог парить над облаками. Это было так реально и удивительно.",
+                            "Я люблю читать книги в свободное время. Мой любимый жанр - детективы. Они держат в напряжении до самого конца. Читал ли ты что-нибудь интересное в последнее время?",
+                            "Приготовить ужин сегодня вечером - отличная идея. Думаю, сделаю пасту с томатным соусом. Это просто, но очень вкусно. Хочешь помочь мне на кухне?",
+                            "Моя собака обожает играть в мяч во дворе. Она бегает так быстро, когда я бросаю мяч. Иногда приносит его обратно, иногда нет. Собаки такие забавные и верные друзья.",
+                            "В кофейне в центре города самые вкусные пирожные. Я хожу туда каждую субботу утром. Бариста уже знает мой обычный заказ наизусть. Приятно иметь привычное место.",
+                            "В этом году я учусь играть на гитаре. Пальцы болят от нажатия на струны. Но с практикой становится лучше. Музыка приносит столько радости в мою жизнь.",
+                            "Вчера я встретил старого друга в продуктовом магазине. Мы не виделись много лет. Говорили почти час на парковке. Удивительно, как быстро летит время.",
+                            "Сегодняшний закат был просто потрясающим. Небо стало оранжевым и розовым. Жаль, что у меня не было с собой камеры. Природа создает самые удивительные картины каждый день.",
+                            "Планирую поездку на пляж в следующем месяце. Мне нравится звук волн, разбивающихся о берег. Строить замки из песка весело даже взрослым. Океан всегда успокаивает меня."
                         ],
                         medium_ru: [
-                            "Быстрая коричневая лиса прыгает через ленивую собаку. Это классическое предложение для теста печати, которое содержит каждую букву алфавита. Практика делает совершенным, когда речь идет о скорости и точности печати. Последовательность является ключом к улучшению.",
-                            "Программирование - это искусство говорить компьютеру, что делать через серию инструкций. Это требует логического мышления, навыков решения проблем и внимания к деталям. Каждый программист где-то начинал и учится через практику.",
-                            "Технология революционизировала способ нашего общения, работы и повседневной жизни. От смартфонов до искусственного интеллекта, мы постоянно окружены инновационными решениями, которые делают нашу жизнь проще и эффективнее.",
-                            "Российская Федерация является крупнейшей страной в мире по территории. Столица России - Москва, которая также является экономическим и политическим центром. Россия сочетает в себе современные технологии и богатое культурное наследие, создавая уникальную смесь традиций и инноваций.",
-                            "Образование играет фундаментальную роль в развитии любого общества. Современные образовательные методы направлены на развитие творческих способностей студентов. Преподаватели должны использовать новые педагогические техники и интерактивные подходы для эффективного обучения.",
-                            "Здоровье является самым ценным богатством человека. Регулярные физические упражнения, правильное питание и избегание стресса важны для поддержания здоровья. Качество и доступность медицинских услуг определяют благополучие общества.",
-                            "Культура и искусство отражают духовное богатство народа. Русский народ имеет богатые музыкальные, литературные и художественные традиции. Красная площадь, Эрмитаж и Большой театр являются драгоценными частями всемирного культурного наследия.",
-                            "Экономическое развитие обеспечивает независимость страны. Промышленность, сельское хозяйство и сфера услуг составляют основу экономики России. Инновационные проекты и иностранные инвестиции ускоряют экономический рост и технологическое развитие.",
-                            "Экология и охрана окружающей среды являются одними из самых актуальных вопросов современности. Экономия водных ресурсов, улучшение качества воздуха и состояния почвы важны для будущих поколений. Рациональное использование природных ресурсов необходимо для устойчивого развития."
+                            "Я работаю из дома уже два года, и это было довольно сложное приспособление. Сначала мне не хватало офисной атмосферы и общения с коллегами во время кофе-брейков. Теперь я ценю гибкость и дополнительное время, которое экономлю на дороге.",
+                            "Моя бабушка всегда говорила, что готовка - это искусство, которое объединяет людей. Она научила меня готовить свой знаменитый яблочный пирог, когда мне было двенадцать лет. Секретный ингредиент, говорила она, - это терпение и любовь. Я до сих пор использую ее рецепт.",
+                            "На прошлых выходных я решил разобрать свой шкаф и нашел одежду, которую не носил годами. Это было похоже на открытие капсулы времени моих прошлых модных предпочтений. Некоторые вещи вызывали приятные воспоминания, а другие заставляли задуматься.",
+                            "Местный фермерский рынок стал моим любимым местом для субботних утренних прогулок. Мне нравится общаться с продавцами об их продукции и узнавать о разных сортах овощей. Есть что-то особенное в покупке еды напрямую у тех, кто ее вырастил.",
+                            "Я пытаюсь изучать испанский язык уже шесть месяцев, используя приложение для изучения языков. Прогресс оказался медленнее, чем я ожидал, но теперь я могу вести базовые разговоры с соседом, который свободно говорит по-испански.",
+                            "Мы с лучшим другом планируем поездку на автомобиле по стране следующим летом. Мы изучаем интересные места для посещения и составляем подробный маршрут. Волнение нарастает по мере приближения даты отъезда.",
+                            "Недавно я начал волонтерить в приюте для животных по выходным. Собаки и кошки там так благодарны за внимание и заботу. Невероятно приятно помогать этим животным найти любящие дома. Я даже подумываю взять одного себе.",
+                            "Книга, которую я сейчас читаю, - это увлекательная биография известного ученого. Удивительно узнавать о вызовах и прорывах, которые сформировали их карьеру. Чтение биографий всегда вдохновляет меня более решительно преследовать свои цели.",
+                            "Я экспериментирую с разными способами заваривания кофе. Каждая техника создает уникальный вкусовой профиль, от насыщенного вкуса френч-пресса до чистого послевкусия пуровера. Моя кухня превратилась в мини-кофейную лабораторию.",
+                            "Тропа для пеших прогулок возле моего дома предлагает захватывающие виды на окружающие горы. Я стараюсь ходить туда как минимум дважды в неделю, и каждый визит открывает что-то новое в пейзаже. Природа умеет ставить все на свои места."
                         ],
                         hard_ru: [
-                            "Сопоставление квантовой механики и классической физики представляет интригующий парадокс, который продолжает бросать вызов нашему пониманию фундаментальной природы реальности. Теоретические физики борются с этой загадкой десятилетиями, разрабатывая все более сложные математические структуры для примирения этих, казалось бы, несовместимых мировоззрений.",
-                            "Криптовалюта и технология блокчейн представляют сдвиг парадигмы в том, как мы концептуализируем цифровые транзакции и децентрализованные системы. Криптографические алгоритмы, лежащие в основе этих технологий, обеспечивают безопасность и неизменность, позволяя одноранговые взаимодействия без традиционных посредников.",
-                            "Искусственный интеллект и алгоритмы машинного обучения вызывают революционные изменения в современной технологической сфере. Эти системы могут обучаться на больших объемах данных, выявлять сложные закономерности и помогать улучшать процессы принятия решений человеком. Однако вопросы этики и безопасности все еще требуют решения.",
-                            "Нейронаука раскрыла замечательную пластичность человеческого мозга, демонстрируя, что нейронные пути могут перестраиваться на протяжении всей жизни через целенаправленную практику и стимуляцию окружающей среды. Эта нейропластичность имеет глубокие последствия для образования, реабилитации и стратегий личностного развития.",
-                            "Глобализация и цифровая революция вызывают фундаментальные изменения во всех аспектах современного общества. Хотя экономическая интеграция, технологические инновации и культурный обмен создают новые возможности, они также порождают новые проблемы, такие как неравенство и социальное разделение.",
-                            "Экологическая устойчивость и изменение климата являются одними из самых актуальных вопросов современности. Принципы устойчивого развития, возобновляемые источники энергии и стратегии защиты окружающей среды необходимы для создания жизнеспособного мира для будущих поколений.",
-                            "Биомедицина и генетические исследования открывают возможности для разработки персонализированных медицинских подходов и методов профилактики заболеваний. Однако вопросы генетических манипуляций и биоэтики ставят перед обществом новые этические и правовые проблемы."
+                            "Сложная взаимосвязь между квантовой механикой и классической физикой продолжает очаровывать исследователей по всему миру. Ученые разрабатывают все более сложные математические модели для преодоления разрыва между этими, казалось бы, несовместимыми теориями, надеясь раскрыть тайны фундаментальной природы нашей вселенной.",
+                            "Технология блокчейн революционизировала то, как мы думаем о цифровых транзакциях и безопасности данных. Криптографические принципы, лежащие в основе этих систем, гарантируют, что информация остается защищенной от подделки, одновременно обеспечивая децентрализованные сети, которые работают без традиционных центральных властей или посредников.",
+                            "Искусственный интеллект ставит глубокие философские вопросы о сознании, творчестве и том, что значит быть человеком. По мере того как алгоритмы машинного обучения становятся более сложными, мы должны тщательно рассматривать этические последствия создания систем, которые могут в конечном итоге соответствовать или превосходить человеческие когнитивные способности.",
+                            "Недавние открытия в нейронауке выявили замечательную адаптивность человеческого мозга на протяжении всей нашей жизни. Эта нейропластичность демонстрирует, что наши нейронные пути могут быть перестроены через целенаправленную практику и стимуляцию окружающей среды, предлагая новые возможности для образования и реабилитации.",
+                            "Современные научные исследования все чаще требуют сотрудничества между несколькими дисциплинами, объединяя экспертов из биологии, химии, физики, математики и информатики. Этот междисциплинарный подход привел к революционным открытиям в биотехнологии, нанотехнологии и квантовых вычислениях.",
+                            "Философские основы знания и истины продолжают бросать вызов современным мыслителям. Ученые и философы спорят о природе реальности, пределах человеческого понимания и критериях установления надежного знания в нашем сложном, взаимосвязанном мире.",
+                            "Геологические процессы раскрывают динамическую природу коры нашей планеты, где огромное давление и температурные условия трансформируют горные образования в течение миллионов лет. Эти метаморфические процессы предоставляют важные знания об эволюции Земли и формировании природных ресурсов."
                         ],
                         // Uzbek texts
                         easy_uz: [
-                            "Mushuk gilamda o'tirardi. Quyoshli kun edi. Qush osmonda baland uchdi. Men kitob o'qishni yaxshi ko'raman. Mening itim juda do'stona. Biz birga o'ynaymiz. Quyosh yorqin porlaydi. Men oilamni sevaman. Hammaga xayrli tong. Yaxshi kun tilayman.",
-                            "Salom dunyo! Bu oson matn. Men tez yozishim mumkin. Tez tulki yugurdi. Log ustidan sakra. Qizil mashina o'tib ketdi. Ko'k osmon ustimizda. Yashil o't baland o'sdi. Sariq quyosh yorqin porlaydi. Qora mushuk sekin yuradi.",
-                            "Bir ikki uch to'rt besh. Olti yetti sakkiz to'qqiz o'n. Men o'ngacha sanashim mumkin. It baland ovozda hurradi. Mushuk jimjit miyovladi. Qushlar shirin qo'shiqlar aytadi. Gullar bahorda ochiladi. Daraxtlar juda baland o'sadi. Suv daryolarda oqadi. Baliqlar okeanlarda suzadi.",
-                            "O'zbekiston go'zal mamlakat. Toshkent - poytaxt shahar. Samarqand tarixiy joy. Buxoro qadimiy shahar. Farg'ona vodiysi meva bog'i. Qizilqum cho'li katta. Amudaryo va Sirdaryo daryolari. O'zbek xalqi mehmondo'st. Plov va somsa mashhur taomlar. Navruz bayrami katta bayram.",
-                            "Maktabda o'qishni yaxshi ko'raman. O'qituvchilar juda yaxshi. Do'stlarim bilan o'ynaymiz. Kitobxonada ko'p kitoblar bor. Kompyuterda o'ynaymiz. Matematika va fizika qiyin. Tarix va geografiya qiziq. Sport o'yinlari katta qiziq. Darsdan keyin uyda dam olamiz. Oilam bilan birga ovqatlanamiz.",
-                            "Yozda issiq bo'ladi. Qishda sovuq bo'ladi. Bahorda gullar ochiladi. Kuzda barglar to'kiladi. Quyosh chiqsa yaxshi. Yomg'ir yog'sa ho'l bo'ladi. Shamol esganda salqin. Tunda yulduzlar porlaydi. Oy to'liq bo'lganda chiroyli. Tabiat juda go'zal.",
-                            "Internet orqali o'rganamiz. Google'da qidiruv qilamiz. YouTube'da video ko'ramiz. Telegram'da xabar yuboramiz. Instagram'da rasmlar ko'ramiz. WhatsApp'da gaplashamiz. Kompyuter ishlatamiz. Telefon qo'ng'irog'i qilamiz. Onlayn darslarga qatnamamiz. Texnologiya hayotni osonlashtiradi."
+                            "Salom! Qalaysiz? Umid qilamanki, sizning kuningiz ajoyib. Bugun ob-havo juda yaxshi. Balki keyinroq sayr qilish kerak? Bu fikr haqida nima deb o'ylaysiz?",
+                            "Xayrli tong! Kecha yaxshi uxladizmi? Menga uchish haqida g'alati tush ko'rdim. Tushimda men bulutlar ustida parvoz qila olardim. Bu juda haqiqiy va ajoyib tuyuldi. Tushlar ba'zan juda qiziq bo'ladi.",
+                            "Bo'sh vaqtimda kitob o'qishni yaxshi ko'raman. Mening sevimli janrim - detektiv romanlar. Ular meni oxirigacha hayratda qoldiradi. So'nggi paytlarda qiziq kitob o'qidingizmi? Men doimo tavsiyalar qidiraman.",
+                            "Bugun kechqurun ovqat pishirish ajoyib fikr. Men makaron va pomidor sousi pishirishni o'ylayman. Bu oddiy, lekin juda mazali. Oshxonada menga yordam berishni xohlaysizmi? Pishirish paytida musiqa tinglashimiz mumkin.",
+                            "Mening itim hovlida to'p o'ynashni juda yaxshi ko'radi. Men to'pni otganimda u juda tez yugurib ketadi. Ba'zan uni qaytarib oladi, ba'zan olmaydi. Itlar juda qiziq va sodiq do'stlardir.",
+                            "Shaharning markazidagi kofe do'konida eng mazali pirojniylar bor. Men har shanba ertalab u erga boraman. Barista mening odatiy buyurtmamni yoddan biladi. Odatli joyga ega bo'lish yaxshi.",
+                            "Bu yil men gitara chalishni o'rganyapman. Barmoqlarim torlarni bosishdan og'riyapti. Lekin mashq bilan yaxshilanib bormoqdaman. Musiqa hayotimga juda ko'p quvonch keltiradi.",
+                            "Kecha oziq-ovqat do'konida eski do'stimni uchratdim. Biz yillar davomida ko'rishmagan edik. Avtoto'xtash joyida deyarli bir soat gaplashdik. Vaqt qanchalik tez o'tib ketayotgani hayratlanarli.",
+                            "Bugungi quyosh botishi mutlaqo ajoyib edi. Osmon to'q sariq va pushti rangga aylandi. Afsuski, kameram yonimda yo'q edi. Tabiat har kuni eng ajoyib san'at asarlarini yaratadi.",
+                            "Kelasi oy dengizga sayohat qilishni rejalashtirib yuribman. Men to'lqinlarning qirg'oqqa urilish tovushini yaxshi ko'raman. Qumdan qal'a qurish katta odamlar uchun ham qiziq. Dengiz meni doimo tinchlantiradi."
                         ],
                         medium_uz: [
-                            "Tez jigarrang tulki dangasa it ustidan sakraydi. Bu alifboni har bir harfini o'z ichiga olgan klassik yozish testi jumlasi. Yozish tezligi va aniqligiga kelganda, amaliyot mukammallikka olib keladi. Izchillik yaxshilanishning kalitidir.",
-                            "Dasturlash - bu kompyuterga qanday qilish kerakligini ko'rsatma seriyasi orqali aytish san'atidir. Bu mantiqiy fikrlash, muammolarni hal qilish qobiliyati va tafsilotlarga e'tibor qaratishni talab qiladi. Har bir dasturchi bir joydan boshlaydi va amaliyot orqali o'rganadi.",
-                            "Texnologiya muloqot qilish, ishlash va kundalik hayotimizni yuritish usulini inqilob qildi. Smartfondan sun'iy intellektgacha, bizni hayotimizni osonlashtiradigan va samaraliroq qiladigan innovatsion yechimlar doimiy ravishda o'rab olgan.",
-                            "O'zbekiston Respublikasi Markaziy Osiyoda joylashgan mustaqil davlatdir. Mamlakatning poytaxti Toshkent shahri bo'lib, u ham iqtisodiy, ham siyosiy markaz hisoblanadi. O'zbekiston zamonaviy texnologiyalar va an'anaviy madaniyat uyg'unligi bilan ajralib turadi.",
-                            "Ta'lim tizimi har qanday jamiyatning rivojlanishida asosiy rol o'ynaydi. Zamonaviy ta'lim metodlari talabalarning ijodiy qobiliyatlarini rivojlantirishga qaratilgan. O'qituvchilar yangi pedagogik texnikalar va interfaol usullardan foydalanishi kerak.",
-                            "Salomatlik - bu insonning eng qimmatbaho boyligidir. Muntazam jismoniy mashqlar, to'g'ri ovqatlanish va stressdan saqlanish sog'liqni saqlash uchun muhimdir. Tibbiy xizmatlar sifati va qulayligi jamiyatning farovonligini belgilaydi.",
-                            "Madaniyat va san'at xalqning ruhiy boyligini ifodalaydi. O'zbek xalqi o'zining boy musiqiy, adabiy va badiiy an'analariga ega. Registon maydoni, Shahrisabz va Buxoro kabi tarixiy shaharlar dunyo madaniy merosining qimmatli qismidir.",
-                            "Iqtisodiy rivojlanish mamlakatning mustaqilligini ta'minlaydi. Sanoat, qishloq xo'jaligi va xizmatlar sohalari O'zbekiston iqtisodiyotining asosini tashkil etadi. Innovatsion loyihalar va xorijiy investitsiyalar iqtisodiy o'sishni tezlashtiradi.",
-                            "Ekologiya va atrof-muhitni muhofaza qilish bugungi kunning eng dolzarb masalalaridan biridir. Suv resurslarini tejash, havo sifati va tuproq holatini yaxshilash kelajak avlodlar uchun muhimdir. Tabiiy resurslardan oqilona foydalanish barqaror rivojlanish uchun zarur."
+                            "Men ikki yildan beri uydan ishlayapman va bu juda katta o'zgarish edi. Dastlab ofis muhitini va kofe tanaffuslarda hamkasblar bilan gaplashishni sog'indim. Endi men moslashuvchanlikni va yo'lda vaqt tejashni qadrlayman.",
+                            "Mening buvim doimo pishirish - bu odamlarni birlashtiruvchi san'at ekanligini aytardi. U o'n ikki yoshimda o'zining mashhur olma pirogini pishirishni o'rgatdi. Uning aytishicha, maxfiy ingredient - bu sabr-toqat va sevgi edi. Men hali ham uning retseptidan foydalanaman.",
+                            "O'tgan dam olish kunida men shkafimni tozalashga qaror qildim va yillar davomida kiyib ko'rmagan kiyimlarni topdim. Bu mening o'tmishdagi moda tanlovlarimning vaqt kapsulasi kabi edi. Ba'zi narsalar xush xotiralarni qaytarib berdi, boshqalari esa men nima o'ylab kiyganimni hayron qoldirdi.",
+                            "Mahalliy fermer bozori mening shanba ertalabki sayohatlarim uchun sevimli joyimga aylandi. Men sotuvchilar bilan ularning mahsulotlari haqida gaplashishni va turli sabzavot navlarini o'rganishni yaxshi ko'raman. Oziq-ovqatni uni yetishtirgan odamlardan to'g'ridan-to'g'ri sotib olishda biror narsa maxsus.",
+                            "Men olti oydan beri til o'rganish ilovasi yordamida ispan tilini o'rganishga harakat qilayapman. Jarayon kutilganidan sekinroq bo'ldi, lekin endi men ispan tilini yaxshi biladigan qo'shnim bilan oddiy suhbatlashishim mumkin. Amaliyot haqiqatan ham mukammallikka olib keladi.",
+                            "Men va eng yaxshi do'stim kelasi yoz mamlakat bo'ylab avtomobil sayohatini rejalashtirib yuribmiz. Biz tashrif buyurish uchun qiziq joylarni o'rganib, batafsil marshrut tuzib yuribmiz. Ketish sanasiga yaqinlashganda hayajon oshib bormoqda.",
+                            "Men yaqinda dam olish kunlari hayvonlar boshpanasida ko'ngilli ishlashni boshladim. U yerdagi itlar va mushuklar diqqat va g'amxo'rlik uchun juda minnatdor. Bu hayvonlarga sevuvchi uylar topishda yordam berish ajoyib his qiladi. Men hatto o'zim uchun birini olishni ham o'ylayapman.",
+                            "Men hozir o'qib yotgan kitob mashhur olim haqidagi qiziqarli tarjimai holi. Ular faoliyatini shakllantirgan qiyinchiliklar va yutuqlar haqida bilib olish hayratlanarli. Tarjimai hollar o'qish meni o'z maqsadlarimni yanada qat'iyat bilan amalga oshirishga ilhomlantiradi.",
+                            "Men turli kofe tayyorlash usullari bilan tajriba o'tkazib yuribman. Har bir texnika noyob ta'm profili yaratadi, fransuz pressining boy ta'midan tortib, pour-overning toza ta'migacha. Mening oshxonam mini kofe laboratoriyasiga aylanib qoldi.",
+                            "Mening uyim yaqinidagi piyoda yurish yo'li atrofdagi tog'larning ajoyib ko'rinishlarini taklif qiladi. Men u erga haftasiga kamida ikki marta borishga harakat qilaman va har bir tashrif landshaftda yangi narsalarni ochib beradi. Tabiat hamma narsani o'z o'rniga qo'yishni biladi."
                         ],
                         hard_uz: [
-                            "Kvant mexanikasi va klassik fizikaning yonma-yon kelishi haqiqatning asosiy tabiatini tushunishimizga doimiy ravishda qarshi chiqadigan qiziqarli paradoksni namoyish etadi. Nazariy fiziklar o'nlab yillar davomida bu muammo bilan kurashib, ushbu, ayni paytda mos kelmaydigan dunyoqarashlarni yarashtirish uchun tobora murakkab matematik tuzilmalar ishlab chiqmoqda.",
-                            "Kriptovalyuta va blokcheyn texnologiyasi raqamli tranzaksiyalar va markazsizlashtirilgan tizimlarni qanday tasavvur qilishimizda paradigmaviy o'zgarishni ifodalaydi. Ushbu texnologiyalarning asosida yotgan kriptografik algoritmlar xavfsizlik va o'zgarishsizlikni ta'minlaydi va an'anaviy vositachilarsiz peer-to-peer o'zaro ta'sirni ta'minlaydi.",
-                            "Sun'iy intellekt va mashina o'rganish algoritmlari zamonaviy texnologiya sohasida inqilobiy o'zgarishlarni keltirib chiqarmoqda. Ushbu tizimlar katta ma'lumotlar bazasidan o'rganib, murakkab naqshlarni aniqlay oladi va odamlarning qaror qabul qilish jarayonlarini yaxshilashga yordam beradi. Biroq, etika va xavfsizlik masalalari hali ham hal qilinishi kerak.",
-                            "Neuroscience tadqiqotlari inson miyasining ajoyib plastikligini ochib berdi va neyron yo'llari butun umrimiz davomida qasddan amalga oshirilgan mashq va muhit stimulyatsiyasi orqali qayta tiklanishi mumkinligini ko'rsatdi. Bu nevroplastiklik ta'lim, reabilitatsiya va shaxsiy rivojlanish strategiyalarida chuqur ta'sirga ega.",
-                            "Globalizatsiya va raqamli inqilob zamonaviy jamiyatning barcha jabhalarida tub o'zgarishlarni keltirib chiqarmoqda. Iqtisodiy integratsiya, texnologik innovatsiya va madaniy almashinuv yangi imkoniyatlar yaratayotgan bo'lsa-da, tengsizlik va ijtimoiy bo'linish kabi yangi muammolarni ham keltirib chiqarmoqda.",
-                            "Ekologik barqarorlik va iqlim o'zgarishi bugungi kunning eng dolzarb masalalaridan biridir. Barqaror rivojlanish tamoyillari, qayta tiklanadigan energiya manbalari va atrof-muhitni muhofaza qilish bo'yicha strategiyalar kelajak avlodlar uchun yashash mumkin bo'lgan dunyo yaratish uchun zarurdir.",
-                            "Biomeditsina va genetik tadqiqotlar shaxsiylashtirilgan tibbiy yondashuvlar va kasalliklarning oldini olish usullarini rivojlantirish imkoniyatlarini ochib bermoqda. Biroq, genetik manipulyatsiya va bioetika masalalari jamiyat oldida yangi axloqiy va huquqiy muammolarni qo'yib qo'ymoqda."
+                            "Kvant mexanikasi va klassik fizika o'rtasidagi murakkab munosabat butun dunyo bo'ylab tadqiqotchilarni hayratda qoldirmoqda. Olimlar bu, ayni paytda mos kelmaydigan nazariyalar o'rtasidagi bo'shliqni to'ldirish uchun tobora murakkab matematik modellarni ishlab chiqmoqda, bizning koinotimizning asosiy tabiatining sirlarini ochishga umid qilmoqda.",
+                            "Blokcheyn texnologiyasi raqamli tranzaksiyalar va ma'lumotlar xavfsizligi haqida qanday o'ylashimizda inqilob qildi. Ushbu tizimlarning asosida yotgan kriptografik tamoyillar ma'lumotlar soxtalashtirishdan himoyalanganligini ta'minlaydi, shu bilan birga an'anaviy markaziy hokimiyatlar yoki vositachilarsiz ishlaydigan markazsizlashtirilgan tarmoqlarni ta'minlaydi.",
+                            "Sun'iy intellekt ong, ijodkorlik va inson bo'lish nima degani haqida chuqur falsafiy savollar qo'yadi. Mashina o'rganish algoritmlari murakkablashib borayotgani sari, biz inson kognitiv qobiliyatlariga tenglashishi yoki ularni oshirishi mumkin bo'lgan tizimlarni yaratishning axloqiy oqibatlarini diqqat bilan ko'rib chiqishimiz kerak.",
+                            "Neuroscience sohasidagi so'nggi kashfiyotlar inson miyasining butun umrimiz davomida ajoyib moslashuvchanligini ochib berdi. Bu nevroplastiklik bizning neyron yo'llarimiz maqsadli mashq va muhit stimulyatsiyasi orqali qayta tiklanishi mumkinligini ko'rsatadi, ta'lim va reabilitatsiya uchun yangi imkoniyatlarni taklif qiladi.",
+                            "Zamonaviy ilmiy tadqiqotlar tobora ko'proq biologiya, kimyo, fizika, matematika va informatika kabi bir nechta sohalar o'rtasida hamkorlikni talab qilmoqda. Bu fanlararo yondashuv biotexnologiya, nanotexnologiya va kvant hisoblash sohalarida inqilobiy kashfiyotlarga olib keldi.",
+                            "Bilim va haqiqatning falsafiy asoslari zamonaviy mutafakkirlar uchun doimiy muammo bo'lib qolmoqda. Olimlar va faylasuflar realitet tabiati, inson tushunchasining chegaralari va bizning murakkab, o'zaro bog'langan dunyomizda ishonchli bilim o'rnatish mezonlari haqida bahslashmoqda.",
+                            "Geologik jarayonlar bizning sayyoramiz qobig'ining dinamik tabiatini ochib beradi, bu yerda katta bosim va harorat sharoitlari millionlab yillar davomida tog' jinslarini o'zgartiradi. Bu metamorfik jarayonlar Yerning evolyutsiyasi va tabiiy resurslarning shakllanishi haqida muhim ma'lumotlar beradi."
                         ]
                     },
                     selectedDifficulty: 'medium',
+                    selectedTime: 60,
                     currentText: "",
                     textArray: [],
+                    currentLineIndex: 0,
+                    currentLine: "",
+                    allLines: [],
                     userInput: "",
                     testStarted: false,
                     testFinished: false,
@@ -373,13 +689,23 @@
                     charactersTyped: 0,
                     errors: 0,
                     correctChars: 0,
-                    startTime: null
+                    startTime: null,
+                    // Lobby properties
+                    inLobby: false,
+                    showJoinRoom: false,
+                    roomCode: '',
+                    currentRoomCode: '',
+                    players: [],
+                    isReady: false,
+                    playerName: 'Player' + Math.floor(Math.random() * 1000),
+                    codeCopied: false,
+                    maxPlayers: 4
                 }
             },
             computed: {
                 wpm() {
                     if (!this.testStarted || this.charactersTyped === 0) return 0;
-                    const minutes = (60 - this.timeLeft) / 60;
+                    const minutes = (this.selectedTime - this.timeLeft) / 60;
                     return Math.round((this.charactersTyped / 5) / minutes);
                 },
                 accuracy() {
@@ -404,7 +730,7 @@
                             subtitle: "Test your typing speed and accuracy",
                             chooseDifficulty: "Choose Difficulty Level",
                             easy: "Easy",
-                            medium: "Medium", 
+                            medium: "Medium",
                             hard: "Hard",
                             wpm: "WPM",
                             accuracy: "Accuracy",
@@ -422,7 +748,32 @@
                             redirecting: "Redirecting to detailed results...",
                             redirectDescription: "You will be automatically redirected to see your detailed performance analysis",
                             footerMessage: "Practice makes perfect! Keep typing to improve your speed and accuracy.",
-                            createdBy: "Created and supported by"
+                            createdBy: "Created and supported by",
+                            lineProgress: "Line",
+                            chooseTime: "Choose Test Duration",
+                            seconds: "sec",
+                            timeDescription: "Select how long you want to practice typing",
+                            lobby: "Multiplayer Lobby",
+                            createRoom: "Create Room",
+                            joinRoom: "Join Room",
+                            enterRoomCode: "Enter Room Code",
+                            join: "Join",
+                            cancel: "Cancel",
+                            roomCode: "Room Code",
+                            shareCode: "Share this code with friends to join",
+                            players: "Players",
+                            roomSettings: "Room Settings",
+                            duration: "Duration",
+                            playersCount: "Players",
+                            ready: "Ready",
+                            notReady: "Not Ready",
+                            leaveRoom: "Leave Room",
+                            codeCopied: "Code copied to clipboard!",
+                            maxPlayers: "Max Players",
+                            currentPlayers: "Current",
+                            yourName: "Your Name",
+                            enterName: "Enter your name",
+                            you: "You"
                         },
                         ru: {
                             title: "Тест Печати",
@@ -447,7 +798,32 @@
                             redirecting: "Перенаправление к подробным результатам...",
                             redirectDescription: "Вы будете автоматически перенаправлены для просмотра детального анализа производительности",
                             footerMessage: "Практика ведет к совершенству! Продолжайте печатать, чтобы улучшить скорость и точность.",
-                            createdBy: "Создано и поддерживается"
+                            createdBy: "Создано и поддерживается",
+                            lineProgress: "Строка",
+                            chooseTime: "Выберите продолжительность теста",
+                            seconds: "сек",
+                            timeDescription: "Выберите, как долго вы хотите практиковаться в печати",
+                            lobby: "Мультиплеер Лобби",
+                            createRoom: "Создать Комнату",
+                            joinRoom: "Присоединиться",
+                            enterRoomCode: "Введите код комнаты",
+                            join: "Войти",
+                            cancel: "Отмена",
+                            roomCode: "Код Комнаты",
+                            shareCode: "Поделитесь этим кодом с друзьями",
+                            players: "Игроки",
+                            roomSettings: "Настройки Комнаты",
+                            duration: "Продолжительность",
+                            playersCount: "Игроки",
+                            ready: "Готов",
+                            notReady: "Не Готов",
+                            leaveRoom: "Покинуть Комнату",
+                            codeCopied: "Код скопирован в буфер обмена!",
+                            maxPlayers: "Макс. Игроков",
+                            currentPlayers: "Текущие",
+                            yourName: "Ваше Имя",
+                            enterName: "Введите ваше имя",
+                            you: "Вы"
                         },
                         uz: {
                             title: "Yozish Testi",
@@ -472,7 +848,32 @@
                             redirecting: "Batafsil natijalarga yo'naltirilmoqda...",
                             redirectDescription: "Batafsil ishlash tahlilini ko'rish uchun avtomatik ravishda yo'naltirilasiz",
                             footerMessage: "Amaliyot mukammallikka olib keladi! Tezlik va aniqlikni yaxshilash uchun yozishni davom eting.",
-                            createdBy: "Yaratilgan va qo'llab-quvvatlanadi"
+                            createdBy: "Yaratilgan va qo'llab-quvvatlanadi",
+                            lineProgress: "Qator",
+                            chooseTime: "Test davomiyligini tanlang",
+                            seconds: "son",
+                            timeDescription: "Qancha vaqt yozishni mashq qilishni xohlashingizni tanlang",
+                            lobby: "Ko'p o'yinchi Lobby",
+                            createRoom: "Xona Yaratish",
+                            joinRoom: "Xonaga Qo'shilish",
+                            enterRoomCode: "Xona kodini kiriting",
+                            join: "Qo'shilish",
+                            cancel: "Bekor qilish",
+                            roomCode: "Xona Kodi",
+                            shareCode: "Bu kodni do'stlaringiz bilan ulashing",
+                            players: "O'yinchilar",
+                            roomSettings: "Xona Sozlamalari",
+                            duration: "Davomiyligi",
+                            playersCount: "O'yinchilar",
+                            ready: "Tayyor",
+                            notReady: "Tayyor Emas",
+                            leaveRoom: "Xonadan Chiqish",
+                            codeCopied: "Kod buferga nusxalandi!",
+                            maxPlayers: "Maks. O'yinchilar",
+                            currentPlayers: "Joriy",
+                            yourName: "Sizning Ismingiz",
+                            enterName: "Ismingizni kiriting",
+                            you: "Siz"
                         }
                     };
                     return translations[language] || translations.en;
@@ -495,6 +896,135 @@
                     this.selectedDifficulty = level;
                     this.generateRandomText();
                     this.resetTest();
+                },
+                selectTime(time) {
+                    this.selectedTime = parseInt(time);
+                    this.timeLeft = parseInt(time);
+                    this.resetTest();
+                },
+                // Lobby methods
+                createRoom() {
+                    this.currentRoomCode = this.generateRoomCode();
+                    this.inLobby = true;
+                    this.players = [{
+                        id: 1,
+                        name: this.playerName,
+                        isReady: false
+                    }];
+                    this.isReady = false;
+                    this.showJoinRoom = false;
+                },
+                joinRoom() {
+                    if (this.roomCode.trim()) {
+                        this.currentRoomCode = this.roomCode.trim().toUpperCase();
+                        this.inLobby = true;
+                        this.players = [{
+                            id: 1,
+                            name: this.playerName,
+                            isReady: false
+                        }];
+                        this.isReady = false;
+                        this.showJoinRoom = false;
+                        this.roomCode = '';
+                    }
+                },
+                leaveRoom() {
+                    this.inLobby = false;
+                    this.currentRoomCode = '';
+                    this.players = [];
+                    this.isReady = false;
+                    this.showJoinRoom = false;
+                    this.roomCode = '';
+                },
+                toggleReady() {
+                    this.isReady = !this.isReady;
+                    // Update player status in the list
+                    const playerIndex = this.players.findIndex(p => p.id === 1);
+                    if (playerIndex !== -1) {
+                        this.players[playerIndex].isReady = this.isReady;
+                    }
+                },
+                generateRoomCode() {
+                    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let result = '';
+                    for (let i = 0; i < 6; i++) {
+                        result += chars.charAt(Math.floor(Math.random() * chars.length));
+                    }
+                    return result;
+                },
+                copyRoomCode() {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(this.currentRoomCode).then(() => {
+                            this.codeCopied = true;
+                            setTimeout(() => {
+                                this.codeCopied = false;
+                            }, 2000);
+                        }).catch(() => {
+                            this.fallbackCopyRoomCode();
+                        });
+                    } else {
+                        this.fallbackCopyRoomCode();
+                    }
+                },
+                fallbackCopyRoomCode() {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = this.currentRoomCode;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        this.codeCopied = true;
+                        setTimeout(() => {
+                            this.codeCopied = false;
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Failed to copy room code:', err);
+                    }
+                    document.body.removeChild(textArea);
+                },
+                updateRoomSettings() {
+                    // Update time left when duration changes
+                    this.timeLeft = parseInt(this.selectedTime);
+                    
+                    // Generate new text when difficulty changes
+                    this.generateRandomText();
+                    
+                    // Reset test if it was started
+                    if (this.testStarted) {
+                        this.resetTest();
+                    }
+                    
+                    // Here you would typically send the settings to other players
+                    // For now, we'll just log the changes
+                    console.log('Room settings updated:', {
+                        difficulty: this.selectedDifficulty,
+                        duration: this.selectedTime,
+                        maxPlayers: this.maxPlayers
+                    });
+                },
+                updatePlayerName() {
+                    // Trim whitespace and validate name
+                    const newName = this.playerName.trim();
+                    if (newName && newName.length > 0 && newName.length <= 20) {
+                        // Update player name in the players list
+                        const playerIndex = this.players.findIndex(p => p.id === 1);
+                        if (playerIndex !== -1) {
+                            this.players[playerIndex].name = newName;
+                        }
+                        
+                        // Here you would typically send the name change to other players
+                        console.log('Player name updated to:', newName);
+                    } else {
+                        // Reset to previous name if invalid
+                        const playerIndex = this.players.findIndex(p => p.id === 1);
+                        if (playerIndex !== -1) {
+                            this.playerName = this.players[playerIndex].name;
+                        }
+                    }
                 },
                 getDifficultyDescription() {
                     const descriptions = {
@@ -525,7 +1055,45 @@
                     const difficultyTexts = this.texts[textKey] || this.texts[this.selectedDifficulty];
                     const randomIndex = Math.floor(Math.random() * difficultyTexts.length);
                     this.currentText = difficultyTexts[randomIndex];
-                    this.textArray = this.currentText.split('');
+                    
+                    // For Easy level, show full text. For Medium/Hard, split into lines
+                    if (this.selectedDifficulty === 'easy') {
+                        this.textArray = this.currentText.split('');
+                        this.allLines = [this.currentText];
+                        this.currentLineIndex = 0;
+                        this.currentLine = this.currentText;
+                    } else {
+                        // Split text into lines (approximately 60-80 characters per line)
+                        this.allLines = this.splitTextIntoLines(this.currentText, 70);
+                        this.currentLineIndex = 0;
+                        this.currentLine = this.allLines[0] || "";
+                        this.textArray = this.currentLine.split('');
+                    }
+                },
+                splitTextIntoLines(text, maxLength) {
+                    const words = text.split(' ');
+                    const lines = [];
+                    let currentLine = '';
+
+                    for (let word of words) {
+                        if ((currentLine + word).length <= maxLength) {
+                            currentLine += (currentLine ? ' ' : '') + word;
+                        } else {
+                            if (currentLine) {
+                                lines.push(currentLine);
+                                currentLine = word;
+                            } else {
+                                // If single word is longer than maxLength, split it
+                                lines.push(word);
+                            }
+                        }
+                    }
+
+                    if (currentLine) {
+                        lines.push(currentLine);
+                    }
+
+                    return lines;
                 },
                 startTest() {
                     this.testStarted = true;
@@ -534,13 +1102,23 @@
                     this.charactersTyped = 0;
                     this.errors = 0;
                     this.correctChars = 0;
-                    this.timeLeft = 60;
+                    this.timeLeft = parseInt(this.selectedTime);
+                    this.currentLineIndex = 0;
+                    this.currentLine = this.allLines[0] || "";
+                    this.textArray = this.currentLine.split('');
                     this.startTime = Date.now();
                     
+                    // Clear any existing timer
+                    if (this.timer) {
+                        clearInterval(this.timer);
+                    }
+                    
                     this.timer = setInterval(() => {
-                        this.timeLeft--;
-                        if (this.timeLeft <= 0) {
-                            this.finishTest();
+                        if (this.testStarted && !this.testFinished) {
+                            this.timeLeft--;
+                            if (this.timeLeft <= 0) {
+                                this.finishTest();
+                            }
                         }
                     }, 1000);
                 },
@@ -548,34 +1126,73 @@
                     if (!this.testStarted) return;
                     
                     const inputLength = this.userInput.length;
-                    this.charactersTyped = inputLength;
                     
-                    // Count correct and incorrect characters
-                    let correct = 0;
-                    let incorrect = 0;
-                    
-                    for (let i = 0; i < inputLength; i++) {
-                        if (this.userInput[i] === this.currentText[i]) {
-                            correct++;
-                        } else {
-                            incorrect++;
+                    if (this.selectedDifficulty === 'easy') {
+                        // For Easy level, work with full text
+                        let correct = 0;
+                        let incorrect = 0;
+                        
+                        for (let i = 0; i < inputLength; i++) {
+                            if (this.userInput[i] === this.currentText[i]) {
+                                correct++;
+                            } else {
+                                incorrect++;
+                            }
+                        }
+                        
+                        this.charactersTyped = inputLength;
+                        this.correctChars = correct;
+                        this.errors = incorrect;
+                        
+                        // Check if test is complete
+                        if (inputLength >= this.currentText.length) {
+                            this.finishTest();
+                        }
+                    } else {
+                        // For Medium/Hard levels, work with lines
+                        let correct = 0;
+                        let incorrect = 0;
+                        
+                        for (let i = 0; i < inputLength; i++) {
+                            if (this.userInput[i] === this.currentLine[i]) {
+                                correct++;
+                            } else {
+                                incorrect++;
+                            }
+                        }
+                        
+                        // Update total counts (accumulate across all lines)
+                        this.charactersTyped = (this.currentLineIndex * this.currentLine.length) + inputLength;
+                        this.correctChars = (this.currentLineIndex * this.currentLine.length) + correct;
+                        this.errors = (this.currentLineIndex * this.currentLine.length) + incorrect;
+                        
+                        // Check if current line is complete
+                        if (inputLength >= this.currentLine.length) {
+                            this.advanceToNextLine();
                         }
                     }
+                },
+                advanceToNextLine() {
+                    // Move to next line
+                    this.currentLineIndex++;
                     
-                    this.correctChars = correct;
-                    this.errors = incorrect;
-                    
-                    // Check if test is complete
-                    if (inputLength >= this.currentText.length) {
+                    // Check if we've completed all lines
+                    if (this.currentLineIndex >= this.allLines.length) {
                         this.finishTest();
+                        return;
                     }
+                    
+                    // Update to next line
+                    this.currentLine = this.allLines[this.currentLineIndex];
+                    this.textArray = this.currentLine.split('');
+                    this.userInput = ""; // Reset input for new line
                 },
                 handleKeyDown(event) {
                     if (event.key === 'Backspace' && this.userInput.length > 0) {
                         // Allow backspace
                         return;
                     }
-                    
+
                     // Prevent other special keys
                     if (event.key.length > 1 && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
                         event.preventDefault();
@@ -585,7 +1202,7 @@
                     this.testFinished = true;
                     this.testStarted = false;
                     clearInterval(this.timer);
-                    
+
                     // Save results and redirect to results page
                     const results = {
                         wpm: this.wpm,
@@ -593,12 +1210,12 @@
                         characters: this.charactersTyped,
                         correctChars: this.correctChars,
                         errors: this.errors,
-                        timeUsed: 60 - this.timeLeft,
+                        timeUsed: this.selectedTime - this.timeLeft,
                         difficulty: this.selectedDifficulty
                     };
-                    
+
                     localStorage.setItem('typingResults', JSON.stringify(results));
-                    
+
                     // Redirect to results page after a short delay
                     setTimeout(() => {
                         window.location.href = `results.html?wpm=${results.wpm}&accuracy=${results.accuracy}&characters=${results.characters}&correctChars=${results.correctChars}&errors=${results.errors}&timeUsed=${results.timeUsed}&difficulty=${results.difficulty}`;
@@ -611,8 +1228,14 @@
                     this.charactersTyped = 0;
                     this.errors = 0;
                     this.correctChars = 0;
-                    this.timeLeft = 60;
-                    clearInterval(this.timer);
+                    this.timeLeft = parseInt(this.selectedTime);
+                    this.currentLineIndex = 0;
+                    this.currentLine = this.allLines[0] || "";
+                    this.textArray = this.currentLine.split('');
+                    if (this.timer) {
+                        clearInterval(this.timer);
+                        this.timer = null;
+                    }
                 },
                 changeText() {
                     this.generateRandomText();
@@ -620,10 +1243,18 @@
                 },
                 getCharClass(index) {
                     if (index < this.userInput.length) {
-                        if (this.userInput[index] === this.currentText[index]) {
-                            return 'correct';
+                        if (this.selectedDifficulty === 'easy') {
+                            if (this.userInput[index] === this.currentText[index]) {
+                                return 'correct';
+                            } else {
+                                return 'incorrect';
+                            }
                         } else {
-                            return 'incorrect';
+                            if (this.userInput[index] === this.currentLine[index]) {
+                                return 'correct';
+                            } else {
+                                return 'incorrect';
+                            }
                         }
                     } else if (index === this.userInput.length && this.testStarted) {
                         return 'current';
@@ -643,4 +1274,5 @@
         }).mount('#app');
     </script>
 </body>
+
 </html>
