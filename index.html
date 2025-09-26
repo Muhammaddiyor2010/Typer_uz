@@ -370,13 +370,29 @@
             
             <div v-if="!inLobby" class="text-center">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <button @click="createRoom" class="btn-primary bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold">
-                        <i class="fas fa-plus mr-2"></i>
-                        {{ translations.createRoom || 'Create Room' }}
+                    <button @click="createRoom" :disabled="isCreatingRoom || isJoiningRoom" 
+                            :class="['btn-primary bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300',
+                                    (isCreatingRoom || isJoiningRoom) ? 'opacity-50 cursor-not-allowed' : '']">
+                        <div v-if="isCreatingRoom" class="flex items-center justify-center">
+                            <div class="loading-spinner rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            {{ translations.creatingRoom || 'Creating Room...' }}
+                        </div>
+                        <div v-else class="flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            {{ translations.createRoom || 'Create Room' }}
+                        </div>
                     </button>
-                    <button @click="showJoinRoom = true" class="btn-primary bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold">
-                        <i class="fas fa-sign-in-alt mr-2"></i>
-                        {{ translations.joinRoom || 'Join Room' }}
+                    <button @click="showJoinRoom = true" :disabled="isCreatingRoom || isJoiningRoom"
+                            :class="['btn-primary bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300',
+                                    (isCreatingRoom || isJoiningRoom) ? 'opacity-50 cursor-not-allowed' : '']">
+                        <div v-if="isJoiningRoom" class="flex items-center justify-center">
+                            <div class="loading-spinner rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                            {{ translations.joiningRoom || 'Joining Room...' }}
+                        </div>
+                        <div v-else class="flex items-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            {{ translations.joinRoom || 'Join Room' }}
+                        </div>
                     </button>
                 </div>
                 
@@ -384,11 +400,23 @@
                 <div v-if="showJoinRoom" class="bg-gray-50 p-4 rounded-lg">
                     <div class="flex gap-2">
                         <input v-model="roomCode" type="text" :placeholder="translations.enterRoomCode || 'Enter Room Code'" 
-                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
-                        <button @click="joinRoom" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold">
-                            {{ translations.join || 'Join' }}
+                               :disabled="isJoiningRoom"
+                               :class="['flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none transition-all duration-300',
+                                       isJoiningRoom ? 'opacity-50 cursor-not-allowed' : 'focus:border-blue-500']">
+                        <button @click="joinRoom" :disabled="isJoiningRoom || !roomCode.trim()"
+                                :class="['bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300',
+                                        (isJoiningRoom || !roomCode.trim()) ? 'opacity-50 cursor-not-allowed' : '']">
+                            <div v-if="isJoiningRoom" class="flex items-center">
+                                <div class="loading-spinner rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                {{ translations.joining || 'Joining...' }}
+                            </div>
+                            <div v-else>
+                                {{ translations.join || 'Join' }}
+                            </div>
                         </button>
-                        <button @click="showJoinRoom = false" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold">
+                        <button @click="showJoinRoom = false" :disabled="isJoiningRoom"
+                                :class="['bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300',
+                                        isJoiningRoom ? 'opacity-50 cursor-not-allowed' : '']">
                             {{ translations.cancel || 'Cancel' }}
                         </button>
                     </div>
@@ -873,7 +901,10 @@
                     currentPlayerPosition: 0,
                     isTyping: false,
                     typingTimeout: null,
-                    syncInterval: null
+                    syncInterval: null,
+                    // Loading states
+                    isCreatingRoom: false,
+                    isJoiningRoom: false
                 }
             },
             computed: {
@@ -952,7 +983,10 @@
                             creator: "Creator",
                             onlyCreatorCanChange: "Only room creator can change settings",
                             liveProgress: "Live Progress",
-                            typing: "Typing..."
+                            typing: "Typing...",
+                            creatingRoom: "Creating Room...",
+                            joiningRoom: "Joining Room...",
+                            joining: "Joining..."
                         },
                         ru: {
                             title: "Тест Печати",
@@ -1007,7 +1041,10 @@
                             creator: "Создатель",
                             onlyCreatorCanChange: "Только создатель комнаты может изменять настройки",
                             liveProgress: "Живой Прогресс",
-                            typing: "Печатает..."
+                            typing: "Печатает...",
+                            creatingRoom: "Создание Комнаты...",
+                            joiningRoom: "Подключение к Комнате...",
+                            joining: "Подключение..."
                         },
                         uz: {
                             title: "Yozish Testi",
@@ -1062,7 +1099,10 @@
                             creator: "Yaratuvchi",
                             onlyCreatorCanChange: "Faqat xona yaratuvchisi sozlamalarni o'zgartirishi mumkin",
                             liveProgress: "Jonli Jarayon",
-                            typing: "Yozyapti..."
+                            typing: "Yozyapti...",
+                            creatingRoom: "Xona Yaratilmoqda...",
+                            joiningRoom: "Xonaga Qo'shilmoqda...",
+                            joining: "Qo'shilmoqda..."
                         }
                     };
                     return translations[language] || translations.en;
@@ -1093,53 +1133,22 @@
                 },
                 // Lobby methods
                 createRoom() {
-                    this.currentRoomCode = this.generateRoomCode();
-                    this.inLobby = true;
-                    this.isRoomCreator = true;
-                    this.players = [{
-                        id: this.playerId,
-                        name: this.playerName,
-                        isReady: false,
-                        isCreator: true
-                    }];
-                    this.isReady = false;
-                    this.showJoinRoom = false;
+                    this.isCreatingRoom = true;
                     
-                    // Start real-time synchronization
-                    this.startRealTimeSync();
-                    
-                    // Save room data to localStorage
-                    localStorage.setItem('currentRoom', JSON.stringify({
-                        roomCode: this.currentRoomCode,
-                        isRoomCreator: this.isRoomCreator,
-                        playerId: this.playerId
-                    }));
-                    
-                    // Sync initial room settings
-                    this.syncRoomSettings({
-                        difficulty: this.selectedDifficulty,
-                        duration: this.selectedTime,
-                        maxPlayers: this.maxPlayers,
-                        currentText: this.currentText,
-                        textArray: this.textArray,
-                        allLines: this.allLines,
-                        language: this.selectedLanguage
-                    });
-                },
-                joinRoom() {
-                    if (this.roomCode.trim()) {
-                        this.currentRoomCode = this.roomCode.trim().toUpperCase();
+                    // Simulate room creation delay for better UX
+                    setTimeout(() => {
+                        this.currentRoomCode = this.generateRoomCode();
                         this.inLobby = true;
-                        this.isRoomCreator = false;
+                        this.isRoomCreator = true;
                         this.players = [{
                             id: this.playerId,
                             name: this.playerName,
                             isReady: false,
-                            isCreator: false
+                            isCreator: true
                         }];
                         this.isReady = false;
                         this.showJoinRoom = false;
-                        this.roomCode = '';
+                        this.isCreatingRoom = false;
                         
                         // Start real-time synchronization
                         this.startRealTimeSync();
@@ -1151,8 +1160,51 @@
                             playerId: this.playerId
                         }));
                         
-                        // Try to sync with room settings
-                        this.syncWithRoomSettings();
+                        // Sync initial room settings
+                        this.syncRoomSettings({
+                            difficulty: this.selectedDifficulty,
+                            duration: this.selectedTime,
+                            maxPlayers: this.maxPlayers,
+                            currentText: this.currentText,
+                            textArray: this.textArray,
+                            allLines: this.allLines,
+                            language: this.selectedLanguage
+                        });
+                    }, 1500); // 1.5 second delay
+                },
+                joinRoom() {
+                    if (this.roomCode.trim()) {
+                        this.isJoiningRoom = true;
+                        
+                        // Simulate joining delay for better UX
+                        setTimeout(() => {
+                            this.currentRoomCode = this.roomCode.trim().toUpperCase();
+                            this.inLobby = true;
+                            this.isRoomCreator = false;
+                            this.players = [{
+                                id: this.playerId,
+                                name: this.playerName,
+                                isReady: false,
+                                isCreator: false
+                            }];
+                            this.isReady = false;
+                            this.showJoinRoom = false;
+                            this.roomCode = '';
+                            this.isJoiningRoom = false;
+                            
+                            // Start real-time synchronization
+                            this.startRealTimeSync();
+                            
+                            // Save room data to localStorage
+                            localStorage.setItem('currentRoom', JSON.stringify({
+                                roomCode: this.currentRoomCode,
+                                isRoomCreator: this.isRoomCreator,
+                                playerId: this.playerId
+                            }));
+                            
+                            // Try to sync with room settings
+                            this.syncWithRoomSettings();
+                        }, 1200); // 1.2 second delay
                     }
                 },
                 leaveRoom() {
