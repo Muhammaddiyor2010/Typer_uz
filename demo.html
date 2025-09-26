@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Multiplayer Typing Test Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-4">
+                <i class="fas fa-users mr-2 text-blue-600"></i>
+                Real-time Multiplayer Typing Test Demo
+            </h1>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-blue-800 mb-3">
+                        <i class="fas fa-crown mr-2"></i>
+                        Room Creator Features
+                    </h3>
+                    <ul class="space-y-2 text-sm text-blue-700">
+                        <li><i class="fas fa-check mr-2"></i>Can change room settings (difficulty, duration, max players)</li>
+                        <li><i class="fas fa-check mr-2"></i>Language and text sync with all players</li>
+                        <li><i class="fas fa-check mr-2"></i>Can see all players' live progress</li>
+                        <li><i class="fas fa-check mr-2"></i>Visual crown indicator in player list</li>
+                        <li><i class="fas fa-check mr-2"></i>Settings are locked for other players</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-green-50 p-4 rounded-lg">
+                    <h3 class="text-lg font-semibold text-green-800 mb-3">
+                        <i class="fas fa-user mr-2"></i>
+                        Joined Player Features
+                    </h3>
+                    <ul class="space-y-2 text-sm text-green-700">
+                        <li><i class="fas fa-check mr-2"></i>Can only toggle ready/not ready status</li>
+                        <li><i class="fas fa-check mr-2"></i>Can change their own name</li>
+                        <li><i class="fas fa-check mr-2"></i>Settings are read-only (grayed out)</li>
+                        <li><i class="fas fa-check mr-2"></i>Automatically sync with room creator's settings</li>
+                        <li><i class="fas fa-check mr-2"></i>Can see other players' live typing progress</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="mt-6 bg-yellow-50 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-yellow-800 mb-3">
+                    <i class="fas fa-bolt mr-2"></i>
+                    Real-time Features
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-yellow-700">
+                    <div>
+                        <h4 class="font-semibold mb-2">Live Progress Tracking</h4>
+                        <ul class="space-y-1">
+                            <li>• Real-time WPM and accuracy</li>
+                            <li>• Current typing position</li>
+                            <li>• Typing status indicator</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Visual Cursors</h4>
+                        <ul class="space-y-1">
+                            <li>• Red cursors show other players' positions</li>
+                            <li>• Player names above cursors</li>
+                            <li>• Animated typing indicators</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-semibold mb-2">Synchronization</h4>
+                        <ul class="space-y-1">
+                            <li>• Language sync across all players</li>
+                            <li>• Text content sync</li>
+                            <li>• Settings sync (creator only)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center">
+                <a href="index.html" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors inline-flex items-center">
+                    <i class="fas fa-play mr-2"></i>
+                    Try the Live Demo
+                </a>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">
+                <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                How to Test the Multiplayer Features
+            </h2>
+            
+            <div class="space-y-4 text-gray-700">
+                <div class="flex items-start">
+                    <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">1</div>
+                    <div>
+                        <h3 class="font-semibold">Open Multiple Browser Windows</h3>
+                        <p class="text-sm text-gray-600">Open the main app in 2-3 different browser windows or tabs to simulate multiple players.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">2</div>
+                    <div>
+                        <h3 class="font-semibold">Create a Room</h3>
+                        <p class="text-sm text-gray-600">In the first window, click "Create Room" to become the room creator. Copy the room code.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">3</div>
+                    <div>
+                        <h3 class="font-semibold">Join the Room</h3>
+                        <p class="text-sm text-gray-600">In other windows, click "Join Room" and enter the room code to join as regular players.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">4</div>
+                    <div>
+                        <h3 class="font-semibold">Test Settings</h3>
+                        <p class="text-sm text-gray-600">Try changing settings in the room creator window - notice how joined players can't change them.</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="bg-blue-100 text-blue-800 rounded-full w-6 h-6 flex items-center justify-center text-sm font-bold mr-3 mt-0.5">5</div>
+                    <div>
+                        <h3 class="font-semibold">Start Typing</h3>
+                        <p class="text-sm text-gray-600">Start the typing test and watch the live progress indicators and cursors in real-time!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
