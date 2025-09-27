@@ -101,7 +101,7 @@
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">{{ translations.errorRate }}</span>
-                            <span class="font-semibold" :class="getErrorColor()">{{ getErrorRate() }}%</span>
+                            <span class="font-semibold" :class="getErrorColor()">{{ results.errorRate || getErrorRate() }}%</span>
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-gray-600">{{ translations.timeTaken }}</span>
@@ -325,10 +325,11 @@
                     if (urlParams.has('wpm')) {
                         this.results = {
                             wpm: parseInt(urlParams.get('wpm')),
-                            accuracy: parseInt(urlParams.get('accuracy')),
+                            accuracy: parseFloat(urlParams.get('accuracy')),
                             characters: parseInt(urlParams.get('characters')),
                             correctChars: parseInt(urlParams.get('correctChars')),
                             errors: parseInt(urlParams.get('errors')),
+                            errorRate: parseFloat(urlParams.get('errorRate')),
                             timeUsed: parseInt(urlParams.get('timeUsed')),
                             difficulty: urlParams.get('difficulty') || 'medium'
                         };
@@ -364,11 +365,11 @@
                             keepPracticing: 'Продолжайте Практиковаться!'
                         },
                         uz: {
-                            excellent: 'Ajoyib!',
-                            veryGood: 'Juda Yaxshi!',
-                            good: 'Yaxshi!',
-                            fair: 'Yaxshi',
-                            keepPracticing: 'Mashq Qilishni Davom Eting!'
+                            excellent: 'Ajoyib! Natijada Zor!',
+                            veryGood: 'Juda Yaxshi! O\'rtacha Mashq!',
+                            good: 'Yaxshi! Mashq Qilishda Davom!',
+                            fair: 'Yomon Emas! Mashq Davom!',
+                            keepPracticing: 'Yomon! Mashq Qilishda Davom!'
                         }
                     };
                     
@@ -395,11 +396,11 @@
                             keepPracticing: 'Не сдавайтесь! Регулярно практикуйтесь, чтобы улучшить скорость и точность печати.'
                         },
                         uz: {
-                            excellent: 'Ajoyib yozish natijasi! Siz eng yaxshi yozuvchilar qatoridasiz.',
-                            veryGood: 'Ajoyib ish! Sizning yozish ko\'nikmalaringiz o\'rtacha darajadan ancha yuqori.',
-                            good: 'Yaxshi natija! Sizda mustahkam yozish ko\'nikmalari bor.',
-                            fair: 'Yomon emas! Ko\'proq mashq bilan sezilarli yaxshilash mumkin.',
-                            keepPracticing: 'Tushkunlikka tushmang! Yozish tezligi va aniqligini yaxshilash uchun muntazam mashq qiling.'
+                            excellent: 'Ajoyib! Siz juda yaxshi yozasiz! Natijada zor!',
+                            veryGood: 'Juda yaxshi! O\'rtacha yaxshi yozasiz! O\'rtacha mashq qilish kerak!',
+                            good: 'Yaxshi! Yomon emas, lekin yanada yaxshilash mumkin! Mashq qilishda davom eting!',
+                            fair: 'Yomon emas! Mashq qilishda davom eting! Tez orada yaxshilasiz!',
+                            keepPracticing: 'Yomon bo\'lsa juda yomon! Mashq qilishda davom eting! Har kuni mashq qiling!'
                         }
                     };
                     
@@ -535,7 +536,9 @@
                     return 'text-red-600';
                 },
                 getErrorRate() {
-                    return Math.round((this.results.errors / this.results.characters) * 100);
+                    if (this.results.characters === 0) return 0;
+                    const errorRate = (this.results.errors / this.results.characters) * 100;
+                    return Math.round(errorRate * 100) / 100; // Round to 2 decimal places
                 },
                 getDifficultyColor() {
                     const colors = {
@@ -562,11 +565,11 @@
                             excellent: ['Превосходная производительность! Продолжайте в том же духе', 'Бросьте себе вызов более сложными текстами']
                         },
                         uz: {
-                            lowSpeed: ['Tezlikni oshirish uchun har kuni yozish mashqlarini bajaring', 'Avval aniqlikka, keyin tezlikka e\'tibor qarang'],
-                            lowAccuracy: ['Aniqlikni yaxshilash uchun biroz sekinroq yozing', 'Ishonchni oshirish uchun osonroq matnlar bilan mashq qiling'],
-                            highErrors: ['Vaqtingizni oling va shoshilmaslik', 'Klaviatura ustida to\'g\'ri barmoq joylashuvidan foydalaning'],
-                            goodPerformance: ['Ajoyib ish! Qiyinroq darajalarni sinab ko\'ring', 'Chidamlilikni oshirish uchun uzunroq matnlar bilan mashq qiling'],
-                            excellent: ['Ajoyib natija! Yaxshi ishlashni davom eting', 'O\'zingizni qiyinroq matnlar bilan sinab ko\'ring']
+                            lowSpeed: ['Har kuni mashq qiling! Tezlik o\'sadi!', 'Mashq qilishda davom eting! Natijada zor bo\'lasiz!'],
+                            lowAccuracy: ['Sekinroq yozing, lekin to\'g\'ri! Mashq qilishda davom eting!', 'Har kuni mashq qiling! Aniqlik yaxshilanadi!'],
+                            highErrors: ['Shoshilmaslik! Mashq qilishda davom eting!', 'Har kuni yozish mashqlarini bajaring! Yaxshilasiz!'],
+                            goodPerformance: ['Ajoyib! Qiyinroq matnlar bilan mashq qiling!', 'Yaxshi ishlashni davom eting! Mashq qilishda davom eting!'],
+                            excellent: ['Ajoyib! Siz juda yaxshi yozasiz! Natijada zor!', 'Yaxshi ishlashni davom eting! Mashq qilishda davom eting!']
                         }
                     };
                     
