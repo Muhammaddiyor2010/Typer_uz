@@ -19,6 +19,14 @@
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
         }
+        
+        .bg-telegram-500 {
+            background-color: #0088cc;
+        }
+        
+        .bg-telegram-600 {
+            background-color: #006699;
+        }
         .performance-excellent { color: #10b981; }
         .performance-good { color: #3b82f6; }
         .performance-average { color: #f59e0b; }
@@ -133,6 +141,10 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button @click="sendToTelegram" class="bg-telegram-500 hover:bg-telegram-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center">
+                    <i class="fab fa-telegram mr-2"></i>
+                    {{ translations.sendToTelegram || 'Telegramga Yuborish' }}
+                </button>
                 <button @click="shareResults" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors flex items-center justify-center">
                     <i class="fas fa-share mr-2"></i>
                     {{ translations.shareResults }}
@@ -207,7 +219,8 @@
                         correctChars: 0,
                         errors: 0,
                         timeUsed: 0,
-                        difficulty: 'medium'
+                        difficulty: 'medium',
+                        userName: 'User'
                     }
                 }
             },
@@ -331,7 +344,8 @@
                             errors: parseInt(urlParams.get('errors')),
                             errorRate: parseFloat(urlParams.get('errorRate')),
                             timeUsed: parseInt(urlParams.get('timeUsed')),
-                            difficulty: urlParams.get('difficulty') || 'medium'
+                            difficulty: urlParams.get('difficulty') || 'medium',
+                            userName: decodeURIComponent(urlParams.get('userName') || 'User')
                         };
                     } else if (storedResults) {
                         this.results = JSON.parse(storedResults);
@@ -785,6 +799,78 @@
                 },
                 takeAnotherTest() {
                     window.location.href = 'index.html';
+                },
+                sendToTelegram() {
+                    const botToken = '8218920207:AAE97UlB_5t7ZrzZ-nV1FYPdjLX4QP3U6ak';
+                    const chatId = '@typer_results'; // You can change this to a specific chat ID
+                    
+                    const certificate = this.generateCertificate(this.results);
+                    
+                    const message = {
+                        chat_id: chatId,
+                        text: certificate,
+                        parse_mode: 'HTML'
+                    };
+                    
+                    fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(message)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Message sent to Telegram:', data);
+                        alert('Natijalar Telegramga muvaffaqiyatli yuborildi!');
+                    })
+                    .catch(error => {
+                        console.error('Error sending to Telegram:', error);
+                        alert('Xatolik yuz berdi. Qaytadan urinib ko\'ring.');
+                    });
+                },
+                generateCertificate(results) {
+                    const userName = results.userName || 'User';
+                    const difficulty = this.getDifficultyTranslation(results.difficulty);
+                    const performance = this.getPerformanceLevel(results.wpm, results.accuracy);
+                    const date = new Date().toLocaleDateString('uz-UZ');
+                    
+                    return `
+🏆 <b>Yozish Testi Sertifikati</b> 🏆
+
+👤 <b>Ism:</b> ${userName}
+📅 <b>Sana:</b> ${date}
+⚡ <b>Tezlik:</b> ${results.wpm} S/M
+🎯 <b>Aniqlik:</b> ${results.accuracy}%
+❌ <b>Xatolar:</b> ${results.errors}
+⏱️ <b>Vaqt:</b> ${results.timeUsed}s
+📊 <b>Qiyinlik:</b> ${difficulty}
+
+${performance}
+
+🎉 <b>Tabriklaymiz!</b> Yozish ko'nikmalaringizni yaxshilashda davom eting!
+
+#TypingTest #YozishTesti #${userName.replace(/\s+/g, '')}
+                    `.trim();
+                },
+                getDifficultyTranslation(difficulty) {
+                    const translations = {
+                        easy: 'Oson',
+                        medium: 'O\'rta',
+                        hard: 'Qiyin'
+                    };
+                    return translations[difficulty] || difficulty;
+                },
+                getPerformanceLevel(wpm, accuracy) {
+                    if (wpm >= 60 && accuracy >= 95) {
+                        return '🌟 <b>Natija:</b> Ajoyib! Siz juda yaxshi yozasiz!';
+                    } else if (wpm >= 40 && accuracy >= 90) {
+                        return '⭐ <b>Natija:</b> Juda yaxshi! O\'rtacha mashq qilish kerak!';
+                    } else if (wpm >= 25 && accuracy >= 85) {
+                        return '👍 <b>Natija:</b> Yaxshi! Mashq qilishda davom eting!';
+                    } else {
+                        return '💪 <b>Natija:</b> Mashq qilishda davom eting! Har kuni yaxshilasiz!';
+                    }
                 }
             }
         }).mount('#app');

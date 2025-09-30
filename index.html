@@ -385,6 +385,20 @@
                 {{ translations.title }}
             </h1>
             <p class="text-white text-lg opacity-90">{{ translations.subtitle }}</p>
+            
+            <!-- User Name Input -->
+            <div class="mt-6 max-w-md mx-auto">
+                <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 border border-white border-opacity-20">
+                    <label class="block text-white text-sm font-medium mb-2">
+                        <i class="fas fa-user mr-2"></i>
+                        {{ translations.userName || 'Ismingiz' }}
+                    </label>
+                    <input v-model="userName" 
+                           type="text" 
+                           :placeholder="translations.enterName || 'Ismingizni kiriting'"
+                           class="w-full px-4 py-2 rounded-lg bg-white bg-opacity-20 border border-white border-opacity-30 text-white placeholder-white placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-yellow-300 focus:border-transparent">
+                </div>
+            </div>
         </header>
 
 
@@ -961,6 +975,7 @@
                     selectedDifficulty: 'medium',
                     selectedTime: 60,
                     showDifficultyDropdown: false,
+                    userName: '',
                     currentText: "",
                     textArray: [],
                     currentLineIndex: 0,
@@ -1074,6 +1089,8 @@
                             footerMessage: "Practice makes perfect! Keep typing to improve your speed and accuracy.",
                             createdBy: "Created and supported by",
                             lineProgress: "Line",
+                            userName: "Your Name",
+                            enterName: "Enter your name",
                             chooseTime: "Choose Test Duration",
                             seconds: "sec",
                             timeDescription: "Select how long you want to practice typing",
@@ -1138,6 +1155,8 @@
                             footerMessage: "Практика ведет к совершенству! Продолжайте печатать, чтобы улучшить скорость и точность.",
                             createdBy: "Создано и поддерживается",
                             lineProgress: "Строка",
+                            userName: "Ваше имя",
+                            enterName: "Введите ваше имя",
                             chooseTime: "Выберите продолжительность теста",
                             seconds: "сек",
                             timeDescription: "Выберите, как долго вы хотите практиковаться в печати",
@@ -1202,6 +1221,7 @@
                             footerMessage: "Amaliyot mukammallikka olib keladi! Tezlik va aniqlikni yaxshilash uchun yozishni davom eting.",
                             createdBy: "Yaratilgan va qo'llab-quvvatlanadi",
                             lineProgress: "Qator",
+                            userName: "Ismingiz",
                             chooseTime: "Test davomiyligini tanlang",
                             seconds: "son",
                             timeDescription: "Qancha vaqt yozishni mashq qilishni xohlashingizni tanlang",
@@ -1680,14 +1700,18 @@
                         errors: this.errors,
                         errorRate: this.errorRate,
                         timeUsed: this.timeUsed,
-                        difficulty: this.selectedDifficulty
+                        difficulty: this.selectedDifficulty,
+                        userName: this.userName || 'User'
                     };
 
                     localStorage.setItem('typingResults', JSON.stringify(results));
 
+                    // Send results to Telegram bot
+                    this.sendToTelegram(results);
+
                     // Redirect to results page after a short delay
                     setTimeout(() => {
-                        window.location.href = `results.html?wpm=${results.wpm}&accuracy=${results.accuracy}&characters=${results.characters}&correctChars=${results.correctChars}&errors=${results.errors}&errorRate=${results.errorRate}&timeUsed=${results.timeUsed}&difficulty=${results.difficulty}`;
+                        window.location.href = `results.html?wpm=${results.wpm}&accuracy=${results.accuracy}&characters=${results.characters}&correctChars=${results.correctChars}&errors=${results.errors}&errorRate=${results.errorRate}&timeUsed=${results.timeUsed}&difficulty=${results.difficulty}&userName=${encodeURIComponent(results.userName)}`;
                     }, 2000);
                 },
                 resetTest() {
@@ -1897,6 +1921,69 @@
                         this.startRealTimeSync();
                     } catch (e) {
                         console.error('Error loading room data:', e);
+                    }
+                }
+                },
+                sendToTelegram(results) {
+                    const botToken = '8218920207:AAE97UlB_5t7ZrzZ-nV1FYPdjLX4QP3U6ak';
+                    const chatId = '@typer_results'; // You can change this to a specific chat ID
+                    
+                    const certificate = this.generateCertificate(results);
+                    
+                    const message = {
+                        chat_id: chatId,
+                        text: certificate,
+                        parse_mode: 'HTML'
+                    };
+                    
+                    fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(message)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Message sent to Telegram:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error sending to Telegram:', error);
+                    });
+                },
+                generateCertificate(results) {
+                    const userName = results.userName || 'User';
+                    const difficulty = this.getDifficultyTranslation();
+                    const performance = this.getPerformanceLevel(results.wpm, results.accuracy);
+                    const date = new Date().toLocaleDateString('uz-UZ');
+                    
+                    return `
+🏆 <b>Yozish Testi Sertifikati</b> 🏆
+
+👤 <b>Ism:</b> ${userName}
+📅 <b>Sana:</b> ${date}
+⚡ <b>Tezlik:</b> ${results.wpm} S/M
+🎯 <b>Aniqlik:</b> ${results.accuracy}%
+❌ <b>Xatolar:</b> ${results.errors}
+⏱️ <b>Vaqt:</b> ${results.timeUsed}s
+📊 <b>Qiyinlik:</b> ${difficulty}
+
+${performance}
+
+🎉 <b>Tabriklaymiz!</b> Yozish ko'nikmalaringizni yaxshilashda davom eting!
+
+#TypingTest #YozishTesti #${userName.replace(/\s+/g, '')}
+                    `.trim();
+                },
+                getPerformanceLevel(wpm, accuracy) {
+                    if (wpm >= 60 && accuracy >= 95) {
+                        return '🌟 <b>Natija:</b> Ajoyib! Siz juda yaxshi yozasiz!';
+                    } else if (wpm >= 40 && accuracy >= 90) {
+                        return '⭐ <b>Natija:</b> Juda yaxshi! O\'rtacha mashq qilish kerak!';
+                    } else if (wpm >= 25 && accuracy >= 85) {
+                        return '👍 <b>Natija:</b> Yaxshi! Mashq qilishda davom eting!';
+                    } else {
+                        return '💪 <b>Natija:</b> Mashq qilishda davom eting! Har kuni yaxshilasiz!';
                     }
                 }
             },
