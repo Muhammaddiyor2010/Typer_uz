@@ -859,7 +859,7 @@
             data() {
                 return {
                     selectedLanguage: localStorage.getItem('selectedLanguage') || 'en',
-                    translations: this.getTranslations(localStorage.getItem('selectedLanguage') || 'en'),
+                    translations: {},
                     // Test texts organized by difficulty
                     texts: {
                         easy: [
@@ -1898,31 +1898,6 @@
                             console.error('Error parsing room settings:', e);
                         }
                     }
-                }
-            },
-            mounted() {
-                // Load saved language preference
-                const savedLanguage = localStorage.getItem('selectedLanguage');
-                if (savedLanguage && ['en', 'ru', 'uz'].includes(savedLanguage)) {
-                    this.selectedLanguage = savedLanguage;
-                    this.translations = this.getTranslations(savedLanguage);
-                }
-                this.generateRandomText();
-                
-                // Check if we're already in a room (for page refresh)
-                const currentRoom = localStorage.getItem('currentRoom');
-                if (currentRoom) {
-                    try {
-                        const roomData = JSON.parse(currentRoom);
-                        this.currentRoomCode = roomData.roomCode;
-                        this.inLobby = true;
-                        this.isRoomCreator = roomData.isRoomCreator;
-                        this.playerId = roomData.playerId;
-                        this.startRealTimeSync();
-                    } catch (e) {
-                        console.error('Error loading room data:', e);
-                    }
-                }
                 },
                 sendToTelegram(results) {
                     const botToken = '8218920207:AAE97UlB_5t7ZrzZ-nV1FYPdjLX4QP3U6ak';
@@ -1984,6 +1959,30 @@ ${performance}
                         return '👍 <b>Natija:</b> Yaxshi! Mashq qilishda davom eting!';
                     } else {
                         return '💪 <b>Natija:</b> Mashq qilishda davom eting! Har kuni yaxshilasiz!';
+                    }
+                }
+            },
+            mounted() {
+                // Load saved language preference
+                const savedLanguage = localStorage.getItem('selectedLanguage');
+                if (savedLanguage && ['en', 'ru', 'uz'].includes(savedLanguage)) {
+                    this.selectedLanguage = savedLanguage;
+                    this.translations = this.getTranslations(savedLanguage);
+                }
+                this.generateRandomText();
+                
+                // Check if we're already in a room (for page refresh)
+                const currentRoom = localStorage.getItem('currentRoom');
+                if (currentRoom) {
+                    try {
+                        const roomData = JSON.parse(currentRoom);
+                        this.currentRoomCode = roomData.roomCode;
+                        this.inLobby = true;
+                        this.isRoomCreator = roomData.isRoomCreator;
+                        this.playerId = roomData.playerId;
+                        this.startRealTimeSync();
+                    } catch (e) {
+                        console.error('Error loading room data:', e);
                     }
                 }
             },
